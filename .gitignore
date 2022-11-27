@@ -1,0 +1,8 @@
+﻿.vs
+**/bin/
+**/obj/
+Reference/EverythingDemo/Debug
+Reference/EverythingDemo/Release
+Reference/EverythingDemo/x64
+Reference/EverythingDemo/EverythingDemo.vcxproj.user
+desktop.ini
