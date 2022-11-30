@@ -23,8 +23,11 @@ jobs:
     - name: Download & run Everything
       shell: pwsh
       run: |
+        $html = Invoke-WebRequest -Uri https://www.voidtools.com
+        $dl = $html.links | where href -match "^.+\.x86\.zip$" | select -expandproperty href
+        $dl = (New-Object System.Uri ([Uri]"https://www.voidtools.com", $dl)).AbsoluteUri
         $zipPath = [IO.Path]::Join((pwd), "Everything.x86.zip")
-        Invoke-WebRequest -Uri "https://www.voidtools.com/Everything-1.4.1.1022.x86.zip" -OutFile $zipPath
+        Invoke-WebRequest -Uri $dl -OutFile $zipPath
         7z x $zipPath
         Start-Process (Resolve-Path "Everything.exe") -WindowStyle Hidden
 

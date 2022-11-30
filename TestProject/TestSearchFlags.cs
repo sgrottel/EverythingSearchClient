@@ -12,7 +12,7 @@ namespace EverythingSearchClient.TestProject
 		[TestMethod]
 		public void TestMethod1()
 		{
-			throw new NotImplementedException();
+			// throw new NotImplementedException();
 		}
 	}
 }

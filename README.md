@@ -1,9 +1,10 @@
 # 🔎 EverythingSearchClient
 A fully managed search client library for [Voidtools' Everything](https://www.voidtools.com/).
 
-* 🚧 TODO: Version
+[![Build & Test](https://github.com/sgrottel/EverythingSearchClient/actions/workflows/dotnet-desktop.yml/badge.svg)](https://github.com/sgrottel/EverythingSearchClient/actions/workflows/dotnet-desktop.yml)
+
+
 * 🚧 TODO: Tests
-* 🚧 TODO: Build status
 * 🚧 TODO: Nuget status/version/test app ?
 
 I wrote this library, because I wanted a managed .Net solution, which would not depend on the [native code SDK by Voidtools](https://www.voidtools.com/support/everything/sdk/).
