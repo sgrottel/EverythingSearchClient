@@ -56,15 +56,23 @@ jobs:
     - name: Inject nuget dependency
       shell: pwsh
       run: |
+        cd TestNugetConsoleApp
 
     - name: Build nuget test app
       shell: pwsh
       run: |
+        dotnet build --configuration ${{ matrix.configuration }}
 
     - name: Run nuget test app
       shell: pwsh
       run: |
+        gci *.exe -recurse
+        cd ..
 
     - name: Upload artifact
-      shell: pwsh
-      run: |
+      if: ${{ matrix.configuration == 'Release' }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: EverythingSearchClient-${{ env.FULL_VERSION_NUMBER }}
+        path: EverythingSearchClient\bin\Release\*.nupkg
+        if-no-files-found: error
