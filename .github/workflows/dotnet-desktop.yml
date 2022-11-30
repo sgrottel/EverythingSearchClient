@@ -20,8 +20,29 @@ jobs:
       with:
         dotnet-version: 6.0.x
 
+    - name: Download & Run Everything
+      shell: pwsh
+      run: |
+        $zipPath = Resolve-Path "EverythingSearchClient\Everything.zip"
+        Invoke-WebRequest -Uri "https://www.voidtools.com/Everything-1.4.1.1022.x86.zip" -OutFile $zipPath
+        7z x $zipPath
+        Start-Process (Resolve-Path "Everything.exe") -WindowStyle Hidden
+
     - name: Install dependencies
       run: dotnet restore
+
+    - name: Inject build number
+      shell: pwsh
+      run: |
+        $csproj = New-Object System.XML.XMLDocument
+        $csprojPath = Resolve-Path "EverythingSearchClient\EverythingSearchClient.csproj"
+        $csproj.Load($csprojPath)
+        $version = New-Object System.Version $csproj.Project.PropertyGroup.Version
+        $version = New-Object System.Version @( $version.Major, $version.Minor, ([System.Math]::Max(0, $version.Build)), $env:GITHUB_RUN_NUMBER )
+        Write-Host "Version number: $version"
+        $csproj.Project.PropertyGroup.Version = $version.ToString()
+        $csproj.Save($csprojPath)
+        Write-Output "FULL_VERSION_NUMBER=$version" >> $env:GITHUB_ENV
 
     - name: Build application
       run: dotnet build --configuration ${{ matrix.configuration }} --no-restore
