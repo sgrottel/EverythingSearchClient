@@ -61,18 +61,20 @@ jobs:
     - name: Build nuget test app
       shell: pwsh
       run: |
+        cd TestNugetConsoleApp
         dotnet build --configuration ${{ matrix.configuration }}
 
     - name: Run nuget test app
       shell: pwsh
       run: |
+        cd TestNugetConsoleApp
         gci *.exe -recurse
-        cd ..
 
     - name: Upload artifact
       if: ${{ matrix.configuration == 'Release' }}
       uses: actions/upload-artifact@v3
       with:
-        name: EverythingSearchClient-${{ env.FULL_VERSION_NUMBER }}
+        name: EverythingSearchClient-Nuget-${{ env.FULL_VERSION_NUMBER }}
         path: EverythingSearchClient\bin\Release\*.nupkg
         if-no-files-found: error
+        retention-days: 7
