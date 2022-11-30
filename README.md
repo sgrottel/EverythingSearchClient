@@ -35,7 +35,7 @@ The full signature reads:
 Result Search(
 	string query,
 	SearchFlags flags = SearchFlags.None,
-	uint maxResults = 0xffffffff,
+	uint maxResults = AllItems,
 	uint offset = 0,
 	BehaviorWhenBusy whenBusy = BehaviorWhenBusy.WaitOrError,
 	uint timeoutMs = 0)
@@ -50,10 +50,10 @@ class Result
 {
 	[Flags]	enum ItemFlags
 	{
-		None = 0, // aka normal file
-		Folder = 1,
-		Drive = 2,
-		Unknown = 0x80 // Something strange was reported by Everything
+		None, // aka normal file
+		Folder,
+		Drive,
+		Unknown // Something strange was reported by Everything
 	}
 
 	class Item
@@ -75,11 +75,11 @@ Search flags allow to enable some optional features:
 ```csharp
 [Flags] enum SearchFlags
 {
-	None = 0,
-	MatchCase = 0x00000001,
-	MatchWholeWord = 0x00000002, // match whole word
-	MatchPath = 0x00000004, // include paths in search
-	RegEx = 0x00000008 // enable regex
+	None,
+	MatchCase,
+	MatchWholeWord, // match whole word
+	MatchPath, // include paths in search
+	RegEx // enable regex
 }
 ```
 

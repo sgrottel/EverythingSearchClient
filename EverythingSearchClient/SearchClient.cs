@@ -51,10 +51,10 @@ namespace EverythingSearchClient
 		public enum SearchFlags
 		{
 			None = 0,
-			MatchCase = 0x00000001,
-			MatchWholeWord = 0x00000002, // match whole word
-			MatchPath = 0x00000004, // include paths in search
-			RegEx = 0x00000008 // enable regex
+			MatchCase = 1,
+			MatchWholeWord = 2, // match whole word
+			MatchPath = 4, // include paths in search
+			RegEx = 8 // enable regex
 		}
 
 		/// <summary>
@@ -96,6 +96,11 @@ namespace EverythingSearchClient
 		}
 
 		/// <summary>
+		/// When used for `maxResults`, indicates to return all items
+		/// </summary>
+		public const uint AllItems = 0xffffffff;
+
+		/// <summary>
 		/// The default timeout is 1 minute
 		/// </summary>
 		public const uint DefaultTimeoutMs = 60 * 1000;
@@ -106,7 +111,7 @@ namespace EverythingSearchClient
 		/// <param name="query">The Everything query string</param>
 		/// <param name="timeoutMs">Wait timeout in milliseconds. Is only used when `whenBusy` is one of the `Wait*` options.</param>
 		/// <exception cref="InvalidOperationException">When Everything is not available</exception>
-		public Result Search(string query, SearchFlags flags = SearchFlags.None, uint maxResults = 0xffffffff, uint offset = 0, BehaviorWhenBusy whenBusy = BehaviorWhenBusy.WaitOrError, uint timeoutMs = DefaultTimeoutMs)
+		public Result Search(string query, SearchFlags flags = SearchFlags.None, uint maxResults = AllItems, uint offset = 0, BehaviorWhenBusy whenBusy = BehaviorWhenBusy.WaitOrError, uint timeoutMs = DefaultTimeoutMs)
 		{
 			if (!IsEverythingAvailable())
 			{
@@ -183,7 +188,7 @@ namespace EverythingSearchClient
 		/// <exception cref="InvalidOperationException">When Everything is not available</exception>
 		public Result Search(string query, SearchFlags flags, BehaviorWhenBusy whenBusy, uint timeoutMs = DefaultTimeoutMs)
 		{
-			return Search(query, flags, 0xffffffff, 0, whenBusy, timeoutMs);
+			return Search(query, flags, AllItems, 0, whenBusy, timeoutMs);
 		}
 
 		/// <summary>
@@ -194,7 +199,7 @@ namespace EverythingSearchClient
 		/// <exception cref="InvalidOperationException">When Everything is not available</exception>
 		public Result Search(string query, BehaviorWhenBusy whenBusy, uint timeoutMs = DefaultTimeoutMs)
 		{
-			return Search(query, SearchFlags.None, 0xffffffff, 0, whenBusy, timeoutMs);
+			return Search(query, SearchFlags.None, AllItems, 0, whenBusy, timeoutMs);
 		}
 
 		/// <summary>
