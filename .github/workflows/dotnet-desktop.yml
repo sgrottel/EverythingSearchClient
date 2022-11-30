@@ -20,10 +20,10 @@ jobs:
       with:
         dotnet-version: 6.0.x
 
-    - name: Download & Run Everything
+    - name: Download & run Everything
       shell: pwsh
       run: |
-        $zipPath = Resolve-Path "EverythingSearchClient\Everything.zip"
+        $zipPath = [IO.Path]::Join((pwd), "Everything.x86.zip")
         Invoke-WebRequest -Uri "https://www.voidtools.com/Everything-1.4.1.1022.x86.zip" -OutFile $zipPath
         7z x $zipPath
         Start-Process (Resolve-Path "Everything.exe") -WindowStyle Hidden
@@ -47,5 +47,21 @@ jobs:
     - name: Build application
       run: dotnet build --configuration ${{ matrix.configuration }} --no-restore
 
-    - name: Run tests
+    - name: Run unit tests
       run: dotnet test --configuration ${{ matrix.configuration }} --no-restore --verbosity normal
+
+    - name: Inject nuget dependency
+      shell: pwsh
+      run: |
+
+    - name: Build nuget test app
+      shell: pwsh
+      run: |
+
+    - name: Run nuget test app
+      shell: pwsh
+      run: |
+
+    - name: Upload artifact
+      shell: pwsh
+      run: |
