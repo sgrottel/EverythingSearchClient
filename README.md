@@ -165,6 +165,29 @@ class SearchClient
 ```
 Your application should first check if Everything is generally `Available`, and should check if it's `Busy` before trying to submit a search query (to avoid unexpected wait times).
 
+## How to Build
+There are several projects in this repository.
+All use Visual Studio solutions.
+I recommend Visual Studio 2022 Community Edition or newer.
+
+* [EverythingSearchClient.sln](EverythingSearchClient.sln) -- Main solution
+  * EverythingSearchClient/[EverythingSearchClient.csproj](EverythingSearchClient/EverythingSearchClient.csproj) -- Main library project;
+    This project also builds the nuget package of the library.
+  * ExampleApp/[ExampleApp.csproj](ExampleApp/ExampleApp.csproj) -- Console application showing a simple way of how to use this library
+  * TestProject/[TestProject.csproj](TestProject/TestProject.csproj) -- The MSTest project to run automated tests of the EverythingSearchClient library
+* TestNugetConsoleApp/[TestNugetConsoleApp.sln](TestNugetConsoleApp/TestNugetConsoleApp.sln) -- Secondary solution to run a simple smoke test console application testing the generated nuget package.
+  See it's dedicated [TestNugetConsoleApp/README.md](TestNugetConsoleApp/README.md) for more details.
+
+The main library project does not have build dependencies other than the DotNet SDK.
+
+The test application have additional dependencies on the test runtime environment, which need to be restored using Nuget.
+This should run automatically during the build process, unless you deactivated this feature.
+
+## Used By
+If you want to get your application into this list, I am happy to accept pull requests extending this README.md, or send me the info via e-mail.
+
+* 🚧 TODO: List my apps using the lib in alphabetic order
+
 ## Alternatives
 ### Everything SDK
 https://www.voidtools.com/support/everything/sdk/

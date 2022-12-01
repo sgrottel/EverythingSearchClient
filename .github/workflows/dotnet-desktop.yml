@@ -56,7 +56,16 @@ jobs:
     - name: Inject nuget dependency
       shell: pwsh
       run: |
-        cd TestNugetConsoleApp
+        $xml = New-Object System.XML.XMLDocument
+        $xmlPath = Resolve-Path "TestNugetConsoleApp\nuget.config"
+        $xml.Load($xmlPath)
+        $xml.SelectSingleNode("configuration/packageSources/add[@key='local project']").value = ("..\EverythingSearchClient\bin\" + ${{ matrix.configuration }})
+        $xml.Save($xmlPath)
+
+        $xmlPath = Resolve-Path "TestNugetConsoleApp\TestNugetConsoleApp.csproj"
+        $xml.Load($xmlPath)
+        $xml.SelectSingleNode("Project/ItemGroup/PackageReference[@Include='EverythingSearchClient']").Version = ${{ env.FULL_VERSION_NUMBER }}
+        $xml.Save($xmlPath)
 
     - name: Build nuget test app
       shell: pwsh
@@ -68,7 +77,8 @@ jobs:
       shell: pwsh
       run: |
         cd TestNugetConsoleApp
-        gci *.exe -recurse
+        $exe = gci TestNugetConsoleApp.exe -recurse
+        & $exe
 
     - name: Upload artifact
       if: ${{ matrix.configuration == 'Release' }}
