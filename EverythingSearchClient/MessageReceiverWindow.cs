@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -13,6 +14,7 @@ namespace EverythingSearchClient
 	/// <summary>
 	/// Native message only window to receive the results from Everything IPC
 	/// </summary>
+	[SupportedOSPlatform("windows")]
 	internal class MessageReceiverWindow
 	{
 		#region P/Invoke

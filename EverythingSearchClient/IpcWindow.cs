@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -11,6 +12,7 @@ namespace EverythingSearchClient
 	/// <summary>
 	/// Manages the detected IpcWindow of Everything
 	/// </summary>
+	[SupportedOSPlatform("windows")]
 	internal class IpcWindow
 	{
 

@@ -3,11 +3,10 @@ A fully managed search client library for [Voidtools' Everything](https://www.vo
 
 [![Build & Test](https://github.com/sgrottel/EverythingSearchClient/actions/workflows/dotnet-desktop.yml/badge.svg)](https://github.com/sgrottel/EverythingSearchClient/actions/workflows/dotnet-desktop.yml)
 
+* 🚧 TODO: Implement tests
+* 🚧 TODO: Nuget badge
 
-* 🚧 TODO: Tests
-* 🚧 TODO: Nuget status/version/test app ?
-
-I wrote this library, because I wanted a managed .Net solution, which would not depend on the [native code SDK by Voidtools](https://www.voidtools.com/support/everything/sdk/).
+I wrote this library, because I wanted a managed .Net solution with a simple interface, which would not depend on the [native code SDK by Voidtools](https://www.voidtools.com/support/everything/sdk/).
 I wanted to have _**one AnyCpu Dll**_ to do the job.
 
 So, this library uses a message-only window and the IPC mechanism to communicate between your application and the Everything service.
@@ -43,6 +42,10 @@ Result Search(
 ```
 
 The program [`ExampleApp/Program.cs`](./ExampleApp/Program.cs) offers a simple *playground*, to try out the function.
+
+This interface does not provide the full feature set of Everything on purpose.
+The idea is to focus on the most importantly functionality only.
+More features might be added to the interface in the future, when needed.
 
 ### Results
 The `Result` type provides information about the number of found items, and the array containing the items:
