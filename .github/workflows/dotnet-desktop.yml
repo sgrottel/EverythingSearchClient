@@ -1,0 +1,95 @@
+name: Build & Test
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        configuration: [Debug, Release]
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Install .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 6.0.x
+
+    - name: Download & run Everything
+      shell: pwsh
+      run: |
+        $html = Invoke-WebRequest -Uri https://www.voidtools.com
+        $dl = $html.links | where href -match "^.+\.x86\.zip$" | select -expandproperty href
+        $dl = (New-Object System.Uri ([Uri]"https://www.voidtools.com", $dl)).AbsoluteUri
+        $zipPath = [IO.Path]::Join((pwd), "Everything.x86.zip")
+        Invoke-WebRequest -Uri $dl -OutFile $zipPath
+        7z x $zipPath
+        Start-Process (Resolve-Path "Everything.exe") -WindowStyle Hidden
+
+    - name: Install dependencies
+      run: dotnet restore
+
+    - name: Inject build number
+      shell: pwsh
+      run: |
+        $csproj = New-Object System.XML.XMLDocument
+        $csprojPath = Resolve-Path "EverythingSearchClient\EverythingSearchClient.csproj"
+        $csproj.Load($csprojPath)
+        $version = New-Object System.Version $csproj.Project.PropertyGroup.Version
+        $version = New-Object System.Version @( $version.Major, $version.Minor, ([System.Math]::Max(0, $version.Build)), $env:GITHUB_RUN_NUMBER )
+        Write-Host "Version number: $version"
+        $csproj.Project.PropertyGroup.Version = $version.ToString()
+        $csproj.Save($csprojPath)
+        Write-Output "FULL_VERSION_NUMBER=$version" >> $env:GITHUB_ENV
+
+    - name: Build application
+      run: dotnet build --configuration ${{ matrix.configuration }} --no-restore
+
+    - name: Run unit tests
+      run: dotnet test --configuration ${{ matrix.configuration }} --no-restore --verbosity normal
+
+    - name: Inject nuget dependency
+      shell: pwsh
+      run: |
+        $xml = New-Object System.XML.XMLDocument
+        $xmlPath = Resolve-Path "TestNugetConsoleApp\nuget.config"
+        $xml.Load($xmlPath)
+        $xml.SelectSingleNode("configuration/packageSources/add[@key='local project']").value = ("..\EverythingSearchClient\bin\${{ matrix.configuration }}")
+        $xml.Save($xmlPath)
+
+        $xmlPath = Resolve-Path "TestNugetConsoleApp\TestNugetConsoleApp.csproj"
+        $xml.Load($xmlPath)
+        $xml.SelectSingleNode("Project/ItemGroup/PackageReference[@Include='EverythingSearchClient']").Version = "${{ env.FULL_VERSION_NUMBER }}"
+        $xml.Save($xmlPath)
+
+    - name: Build nuget test app
+      shell: pwsh
+      run: |
+        cd TestNugetConsoleApp
+        dotnet build --configuration ${{ matrix.configuration }}
+
+    - name: Run nuget test app
+      shell: pwsh
+      run: |
+        cd TestNugetConsoleApp
+        $exe = gci TestNugetConsoleApp.exe -recurse
+        & $exe
+
+    - name: Upload artifact
+      if: ${{ matrix.configuration == 'Release' }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: EverythingSearchClient-Nuget-${{ env.FULL_VERSION_NUMBER }}
+        path: EverythingSearchClient\bin\Release\*.nupkg
+        if-no-files-found: error
+        retention-days: 7

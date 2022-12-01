@@ -1,8 +1,11 @@
 ﻿using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 
 namespace EverythingSearchClient
 {
+
+	[SupportedOSPlatform("windows")]
 	public class SearchClient
 	{
 

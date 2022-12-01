@@ -1,12 +1,12 @@
 # 🔎 EverythingSearchClient
 A fully managed search client library for [Voidtools' Everything](https://www.voidtools.com/).
 
-* 🚧 TODO: Version
-* 🚧 TODO: Tests
-* 🚧 TODO: Build status
-* 🚧 TODO: Nuget status/version/test app ?
+[![Build & Test](https://github.com/sgrottel/EverythingSearchClient/actions/workflows/dotnet-desktop.yml/badge.svg)](https://github.com/sgrottel/EverythingSearchClient/actions/workflows/dotnet-desktop.yml)
 
-I wrote this library, because I wanted a managed .Net solution, which would not depend on the [native code SDK by Voidtools](https://www.voidtools.com/support/everything/sdk/).
+* 🚧 TODO: Implement tests
+* 🚧 TODO: Nuget badge
+
+I wrote this library, because I wanted a managed .Net solution with a simple interface, which would not depend on the [native code SDK by Voidtools](https://www.voidtools.com/support/everything/sdk/).
 I wanted to have _**one AnyCpu Dll**_ to do the job.
 
 So, this library uses a message-only window and the IPC mechanism to communicate between your application and the Everything service.
@@ -42,6 +42,10 @@ Result Search(
 ```
 
 The program [`ExampleApp/Program.cs`](./ExampleApp/Program.cs) offers a simple *playground*, to try out the function.
+
+This interface does not provide the full feature set of Everything on purpose.
+The idea is to focus on the most importantly functionality only.
+More features might be added to the interface in the future, when needed.
 
 ### Results
 The `Result` type provides information about the number of found items, and the array containing the items:
@@ -163,6 +167,29 @@ class SearchClient
 }
 ```
 Your application should first check if Everything is generally `Available`, and should check if it's `Busy` before trying to submit a search query (to avoid unexpected wait times).
+
+## How to Build
+There are several projects in this repository.
+All use Visual Studio solutions.
+I recommend Visual Studio 2022 Community Edition or newer.
+
+* [EverythingSearchClient.sln](EverythingSearchClient.sln) -- Main solution
+  * EverythingSearchClient/[EverythingSearchClient.csproj](EverythingSearchClient/EverythingSearchClient.csproj) -- Main library project;
+    This project also builds the nuget package of the library.
+  * ExampleApp/[ExampleApp.csproj](ExampleApp/ExampleApp.csproj) -- Console application showing a simple way of how to use this library
+  * TestProject/[TestProject.csproj](TestProject/TestProject.csproj) -- The MSTest project to run automated tests of the EverythingSearchClient library
+* TestNugetConsoleApp/[TestNugetConsoleApp.sln](TestNugetConsoleApp/TestNugetConsoleApp.sln) -- Secondary solution to run a simple smoke test console application testing the generated nuget package.
+  See it's dedicated [TestNugetConsoleApp/README.md](TestNugetConsoleApp/README.md) for more details.
+
+The main library project does not have build dependencies other than the DotNet SDK.
+
+The test application have additional dependencies on the test runtime environment, which need to be restored using Nuget.
+This should run automatically during the build process, unless you deactivated this feature.
+
+## Used By
+If you want to get your application into this list, I am happy to accept pull requests extending this README.md, or send me the info via e-mail.
+
+* 🚧 TODO: List my apps using the lib in alphabetic order
 
 ## Alternatives
 ### Everything SDK
