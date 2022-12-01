@@ -1,4 +1,5 @@
 ﻿using EverythingSearchClient;
+using System.Reflection;
 
 internal class Program
 {
@@ -23,7 +24,13 @@ internal class Program
 
 			Console.WriteLine("Everything {0}", SearchClient.GetEverythingVersion());
 
-			string myPath = System.Reflection.Assembly.GetExecutingAssembly().Location;
+			AssemblyName[] assemblies = Assembly.GetEntryAssembly()?.GetReferencedAssemblies() ?? Array.Empty<AssemblyName>();
+			foreach (AssemblyName a in assemblies)
+			{
+				Console.WriteLine("Using {0}", a);
+			}
+
+			string myPath = Assembly.GetExecutingAssembly().Location;
 			Console.WriteLine("Path from Assembly: {0}", myPath);
 
 			string myFileName = Path.GetFileName(myPath);
