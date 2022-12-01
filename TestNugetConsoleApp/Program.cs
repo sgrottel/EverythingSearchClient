@@ -19,7 +19,7 @@ internal class Program
 	{
 		try
 		{
-			Console.OutputEncoding = System.Text.Encoding.Unicode;
+			Console.OutputEncoding = System.Text.Encoding.UTF8;
 
 			Console.WriteLine("Everything {0}", SearchClient.GetEverythingVersion());
 
@@ -56,8 +56,7 @@ internal class Program
 				found = true;
 			}
 			MyAssert(found, "Found my file in the right path");
-
-			throw new Exception("Fail CI on purpose as test");
+			Console.WriteLine("Complete.");
 
 			return 0;
 		}
