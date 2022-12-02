@@ -7,7 +7,7 @@
     <Nullable>enable</Nullable>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Title>Everything Search Client</Title>
-    <Version>0.1.0</Version>
+    <Version>0.1.1</Version>
     <Authors>SGrottel</Authors>
     <Description>Fully managed search client library for Voidtools' Everything</Description>
     <Copyright>Copyright 2022, by SGrottel</Copyright>
@@ -15,7 +15,7 @@
     <RepositoryUrl>https://github.com/sgrottel/EverythingSearchClient.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageReadmeFile>README_nuget.md</PackageReadmeFile>
     <PackageIcon>MagnifyingGlass_x128.png</PackageIcon>
     <PackageTags>Voidtools;Everything;Search</PackageTags>
   </PropertyGroup>
@@ -25,7 +25,7 @@
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
-    <None Include="..\README.md">
+    <None Include="..\README_nuget.md">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>

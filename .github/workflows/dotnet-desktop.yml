@@ -56,7 +56,7 @@ jobs:
       run: dotnet build --configuration ${{ matrix.configuration }} --no-restore
 
     - name: Run unit tests
-      run: dotnet test --configuration ${{ matrix.configuration }} --no-restore --verbosity normal
+      run: dotnet test --configuration ${{ matrix.configuration }} --no-restore --verbosity normal --logger "console;verbosity=detailed"
 
     - name: Inject nuget dependency
       shell: pwsh

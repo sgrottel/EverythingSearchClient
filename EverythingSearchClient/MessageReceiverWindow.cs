@@ -34,18 +34,37 @@ namespace EverythingSearchClient
 			public IntPtr hIcon;
 			public IntPtr hCursor;
 			public IntPtr hbrBackground;
-			[MarshalAs(UnmanagedType.LPWStr)]
-			public string lpszMenuName;
-			[MarshalAs(UnmanagedType.LPWStr)]
-			public string lpszClassName;
+			public IntPtr lpszMenuName;
+			public IntPtr lpszClassName;
 		}
-
-		[DllImport("user32.dll", SetLastError = true)]
-		static extern ushort RegisterClassW([In] ref WNDCLASS lpWndClass);
 
 		[DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
 		[return: MarshalAs(UnmanagedType.Bool)]
 		private static extern bool GetClassInfoW(IntPtr hInstance, string lpClassName, ref WNDCLASS lpWndClass);
+
+		[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+		struct WNDCLASSEXW {
+			public uint cbSize;
+			public uint style;
+			public IntPtr lpfnWndProc;
+			public int cbClsExtra;
+			public int cbWndExtra;
+			public IntPtr hInstance;
+			public IntPtr hIcon;
+			public IntPtr hCursor;
+			public IntPtr hbrBackground;
+			[MarshalAs(UnmanagedType.LPWStr)]
+			public string lpszMenuName;
+			[MarshalAs(UnmanagedType.LPWStr)]
+			public string lpszClassName;
+			public IntPtr hIconSm;
+		}
+
+		//[DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+		//static extern ushort RegisterClassW([In] ref WNDCLASS lpWndClass);
+
+		[DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+		private static extern ushort RegisterClassExW(ref WNDCLASSEXW wndClass);
 
 		[DllImport("user32.dll", SetLastError = true)]
 		static extern IntPtr CreateWindowExW(
@@ -296,20 +315,25 @@ namespace EverythingSearchClient
 
 		private void EnsureWindowClassRegistered(IntPtr hInst)
 		{
-			WNDCLASS wcex = new();
-			if (!GetClassInfoW(hInst, WindowClassName, ref wcex))
+			WNDCLASS wc = new();
+			if (!GetClassInfoW(hInst, WindowClassName, ref wc))
 			{
-				wcex = new();
+				WNDCLASSEXW wcex = new();
+				wcex.cbSize = (uint)Marshal.SizeOf<WNDCLASSEXW>();
 				wcex.hInstance = hInst;
 				wcex.lpszClassName = WindowClassName;
 				wcex.lpfnWndProc = Marshal.GetFunctionPointerForDelegate(delegWndProc);
 
-				ushort atom = RegisterClassW(ref wcex);
+				ushort atom = RegisterClassExW(ref wcex);
 				int ec = Marshal.GetLastWin32Error();
 				if (atom == 0)
 				{
 					throw new Exception("Failed to register response message-only window class");
 				}
+
+				wcex = new();
+				GetClassInfoW(hInst, WindowClassName, ref wc);
+
 			}
 		}
 
