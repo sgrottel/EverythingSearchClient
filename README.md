@@ -188,6 +188,8 @@ This should run automatically during the build process, unless you deactivated t
 ## Used By
 If you want to get your application into this list, I am happy to accept pull requests extending this README.md, or send me the info via e-mail.
 
+* [Checkouts Overview (https://github.com/sgrottel/checkouts-overview)](https://github.com/sgrottel/checkouts-overview)
+  > Overview dashboard app for source code repository checkouts.
 * 🚧 TODO: List my apps using the lib in alphabetic order
 
 ## Alternatives
