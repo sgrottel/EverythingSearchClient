@@ -65,7 +65,7 @@ namespace EverythingSearchClient
 			/// <summary>
 			/// Gets the optional size of the file on disk in bytes
 			/// </summary>
-			public UInt64? Size { get; protected set; } = null;
+			public ulong? Size { get; protected set; } = null;
 
 			/// <summary>
 			/// Gets the optional creation date time
