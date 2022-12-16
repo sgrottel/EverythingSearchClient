@@ -38,9 +38,47 @@ namespace EverythingSearchClient.TestProject
 			}
 		}
 
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+		private TestContext testContextInstance;
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+
+		/// <summary>
+		/// Gets or sets the test context which provides
+		/// information about and functionality for the current test run.
+		/// </summary>
+		public TestContext TestContext
+		{
+			get { return testContextInstance; }
+			set { testContextInstance = value; }
+		}
+
+		private uint longTimeout = 0; // SearchClient.DefaultTimeoutMs;
+
+		private void EvaluateTimeout()
+		{
+			if (longTimeout > 0) return;
+
+			WaitUntilReady();
+			DateTime start = DateTime.Now;
+			try
+			{
+				Result _ = everything1.Search(".exe");
+			}
+			catch
+			{
+			}
+
+			longTimeout = Math.Max(
+				2 * (uint)(DateTime.Now - start).TotalMilliseconds,
+				SearchClient.DefaultTimeoutMs);
+
+			TestContext.WriteLine("Long Timeout evaluated to be {0} ms", longTimeout);
+		}
+
 		[TestMethod]
 		public void TestMethodWaitOrErrorWhenBusy()
 		{
+			EvaluateTimeout();
 			WaitUntilReady();
 			bool search1Complete = false;
 			bool search1Failed = false;
@@ -61,7 +99,7 @@ namespace EverythingSearchClient.TestProject
 			t.Start();
 
 			WaitUntilBusy();
-			Result r2 = everything2.Search("File " + data.TestDataRootDirectory, SearchClient.BehaviorWhenBusy.WaitOrError);
+			Result r2 = everything2.Search("File " + data.TestDataRootDirectory, SearchClient.BehaviorWhenBusy.WaitOrError, longTimeout);
 
 			Assert.IsTrue(search1Complete);
 			Assert.IsFalse(search1Failed);
@@ -74,6 +112,7 @@ namespace EverythingSearchClient.TestProject
 		[TestMethod]
 		public void TestMethodWaitOrErrorWhenBusyErrorCase()
 		{
+			EvaluateTimeout();
 			WaitUntilReady();
 			bool search1Complete = false;
 			bool search1Failed = false;
@@ -118,6 +157,7 @@ namespace EverythingSearchClient.TestProject
 		[TestMethod]
 		public void TestMethodWaitOrContinueWhenBusy()
 		{
+			EvaluateTimeout();
 			WaitUntilReady();
 			bool search1Complete = false;
 			bool search1Failed = false;
@@ -138,7 +178,7 @@ namespace EverythingSearchClient.TestProject
 			t.Start();
 
 			WaitUntilBusy();
-			Result r2 = everything2.Search("File " + data.TestDataRootDirectory, SearchClient.BehaviorWhenBusy.WaitOrContinue);
+			Result r2 = everything2.Search("File " + data.TestDataRootDirectory, SearchClient.BehaviorWhenBusy.WaitOrContinue, longTimeout);
 
 			Assert.IsTrue(search1Complete);
 			Assert.IsFalse(search1Failed);
@@ -151,6 +191,7 @@ namespace EverythingSearchClient.TestProject
 		[TestMethod]
 		public void TestMethodErrorWhenBusy()
 		{
+			EvaluateTimeout();
 			WaitUntilReady();
 			bool search1Complete = false;
 			bool search1Failed = false;
@@ -175,7 +216,7 @@ namespace EverythingSearchClient.TestProject
 			WaitUntilBusy();
 			try
 			{
-				Result _ = everything2.Search("File " + data.TestDataRootDirectory, SearchClient.BehaviorWhenBusy.Error);
+				Result _ = everything2.Search("File " + data.TestDataRootDirectory, SearchClient.BehaviorWhenBusy.Error, longTimeout);
 				search2Complete = true;
 			}
 			catch
@@ -195,6 +236,7 @@ namespace EverythingSearchClient.TestProject
 		[TestMethod]
 		public void TestMethodContinueWhenBusy()
 		{
+			EvaluateTimeout();
 			WaitUntilReady();
 
 			Thread t = new(() =>
@@ -210,7 +252,7 @@ namespace EverythingSearchClient.TestProject
 			t.Start();
 
 			WaitUntilBusy();
-			Result r2 = everything2.Search("File " + data.TestDataRootDirectory, SearchClient.BehaviorWhenBusy.Continue);
+			Result r2 = everything2.Search("File " + data.TestDataRootDirectory, SearchClient.BehaviorWhenBusy.Continue, longTimeout);
 			Assert.AreEqual<uint>(9, r2.TotalItems);
 
 			// result of search1 within t is undefined
