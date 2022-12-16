@@ -526,14 +526,28 @@ namespace EverythingSearchClient
 				if ((requestFlags & EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_DATE_CREATED) == EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_DATE_CREATED)
 				{
 					long timecode = Marshal.ReadInt64(mem + offset);
-					createDate = DateTime.FromFileTime(timecode);
+					try
+					{
+						createDate = DateTime.FromFileTime(timecode);
+					}
+					catch
+					{
+						createDate = null;
+					}
 					offset += 8;
 				}
 				// if EVERYTHING_IPC_QUERY2_REQUEST_DATE_MODIFIED was set in request_flags, FILETIME date;
 				if ((requestFlags & EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_DATE_MODIFIED) == EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_DATE_MODIFIED)
 				{
 					long timecode = Marshal.ReadInt64(mem + offset);
-					modDate = DateTime.FromFileTime(timecode);
+					try
+					{
+						modDate = DateTime.FromFileTime(timecode);
+					}
+					catch
+					{
+						modDate = null;
+					}
 					// offset += 8;
 				}
 
