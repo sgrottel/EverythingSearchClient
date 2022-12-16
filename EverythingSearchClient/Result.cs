@@ -62,6 +62,21 @@ namespace EverythingSearchClient
 			/// </summary>
 			public string Path { get; protected set; } = string.Empty;
 
+			/// <summary>
+			/// Gets the optional size of the file on disk in bytes
+			/// </summary>
+			public ulong? Size { get; protected set; } = null;
+
+			/// <summary>
+			/// Gets the optional creation date time
+			/// </summary>
+			public DateTime? CreationTime{ get; protected set; } = null;
+
+			/// <summary>
+			/// Gets the optional date time of the last file modification
+			/// </summary>
+			public DateTime? LastWriteTime { get; protected set; } = null;
+
 		}
 
 		/// <summary>

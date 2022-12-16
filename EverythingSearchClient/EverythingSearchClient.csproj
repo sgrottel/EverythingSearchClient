@@ -7,7 +7,7 @@
     <Nullable>enable</Nullable>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Title>Everything Search Client</Title>
-    <Version>0.1.1</Version>
+    <Version>0.2.0</Version>
     <Authors>SGrottel</Authors>
     <Description>Fully managed search client library for Voidtools' Everything</Description>
     <Copyright>Copyright 2022, by SGrottel</Copyright>
