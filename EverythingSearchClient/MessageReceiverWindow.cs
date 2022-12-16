@@ -218,6 +218,52 @@ namespace EverythingSearchClient
 			Debug.Assert(queryStringBytes.Length + querySize == rawQuerySize);
 			queryStringBytes.CopyTo(rawQueryData, querySize);
 
+			queryVersion = 1;
+			return rawQueryData.Length > 0;
+		}
+
+		internal bool BuildQuery2(string query, SearchClient.SearchFlags flags, uint maxResults, uint offset)
+		{
+			var f = requests.Find((x) => x.Item2 == this);
+			if (f == null)
+			{
+				throw new Exception("Initialization broken");
+			}
+			if (hWnd == IntPtr.Zero)
+			{
+				throw new InvalidOperationException("Window not initialized");
+			}
+
+			EverythingIPC.EVERYTHING_IPC_QUERY2 q2 = new();
+			q2.reply_hwnd = (UInt32)hWnd;
+			q2.reply_copydata_message = f.Item1;
+			q2.search_flags = 0;
+			if (flags.HasFlag(SearchClient.SearchFlags.MatchCase)) q2.search_flags |= EverythingIPC.EVERYTHING_IPC_MATCHCASE;
+			if (flags.HasFlag(SearchClient.SearchFlags.MatchWholeWord)) q2.search_flags |= EverythingIPC.EVERYTHING_IPC_MATCHWHOLEWORD;
+			if (flags.HasFlag(SearchClient.SearchFlags.MatchPath)) q2.search_flags |= EverythingIPC.EVERYTHING_IPC_MATCHPATH;
+			if (flags.HasFlag(SearchClient.SearchFlags.RegEx)) q2.search_flags |= EverythingIPC.EVERYTHING_IPC_REGEX;
+			q2.max_results = maxResults;
+			q2.offset = offset;
+			q2.request_flags = EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_NAME
+				| EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_PATH
+				| EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_SIZE
+				| EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_DATE_CREATED
+				| EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_DATE_MODIFIED;
+
+			int querySize = Marshal.SizeOf<EverythingIPC.EVERYTHING_IPC_QUERY2>();
+			int rawQuerySize = querySize + 2 * (query.Length + 1);
+			rawQueryData = new byte[rawQuerySize];
+
+			IntPtr tmp = Marshal.AllocHGlobal(querySize);
+			Marshal.StructureToPtr(q2, tmp, false);
+			Marshal.Copy(tmp, rawQueryData, 0, querySize);
+			Marshal.FreeHGlobal(tmp);
+
+			byte[] queryStringBytes = Encoding.Unicode.GetBytes(query + '\0');
+			Debug.Assert(queryStringBytes.Length + querySize == rawQuerySize);
+			queryStringBytes.CopyTo(rawQueryData, querySize);
+
+			queryVersion = 2;
 			return rawQueryData.Length > 0;
 		}
 
@@ -225,6 +271,9 @@ namespace EverythingSearchClient
 
 		private IntPtr hWnd;
 		private byte[] rawQueryData = Array.Empty<byte>();
+		private int queryVersion = 0;
+
+		internal int QueryVersion { get => queryVersion; }
 
 		private WndProc delegWndProc = ReceiverWndProc;
 
@@ -238,6 +287,10 @@ namespace EverythingSearchClient
 			{
 				throw new InvalidOperationException("No query data built");
 			}
+			if (queryVersion != 1 && queryVersion != 2)
+			{
+				throw new InvalidOperationException("Unsupported query data version built");
+			}
 
 			IntPtr queryData = IntPtr.Zero;
 			IntPtr cdsMem = IntPtr.Zero;
@@ -249,7 +302,15 @@ namespace EverythingSearchClient
 				Marshal.Copy(rawQueryData, 0, queryData, rawQueryData.Length);
 
 				COPYDATASTRUCT cds = new();
-				cds.dwData = (IntPtr)EverythingIPC.EVERYTHING_IPC_COPYDATAQUERYW;
+				switch (queryVersion)
+				{
+					case 1:
+						cds.dwData = (IntPtr)EverythingIPC.EVERYTHING_IPC_COPYDATAQUERYW;
+						break;
+					case 2:
+						cds.dwData = (IntPtr)EverythingIPC.EVERYTHING_IPC_COPYDATA_QUERY2W;
+						break;
+				}
 				cds.cbData = rawQueryData.Length;
 				cds.lpData = queryData;
 
@@ -357,9 +418,30 @@ namespace EverythingSearchClient
 				Name = filename;
 				Path = path;
 			}
+			public ResultItemImplementation(Result.ItemFlags flags, string filename, string path, ulong? fileSize, DateTime? createTime, DateTime? lastWriteTime)
+			{
+				Flags = flags;
+				Name = filename;
+				Path = path;
+				Size = fileSize;
+				CreationTime = createTime;
+				LastWriteTime = lastWriteTime;
+			}
 		}
 
 		private void ParseResultData(IntPtr mem, int size)
+		{
+			if (queryVersion == 1)
+			{
+				ParseResultDataVersion1(mem, size);
+			}
+			else if (queryVersion == 2)
+			{
+				ParseResultDataVersion2(mem, size);
+			}
+		}
+
+		private void ParseResultDataVersion1(IntPtr mem, int size)
 		{
 			UInt32 TotalItems = (uint)Marshal.ReadInt32(mem + 2 * 4);
 			int NumItems = Marshal.ReadInt32(mem + 5 * 4);
@@ -379,6 +461,90 @@ namespace EverythingSearchClient
 			}
 
 			Result = new ResultImplementation(TotalItems, Offset, items.ToArray());
+		}
+
+		private void ParseResultDataVersion2(IntPtr mem, int size)
+		{
+			uint TotalItems = (uint)Marshal.ReadInt32(mem + 0 * 4);
+			int NumItems = Marshal.ReadInt32(mem + 1 * 4);
+			uint Offset = (uint)Marshal.ReadInt32(mem + 2 * 4);
+			uint requestFlags = (uint)Marshal.ReadInt32(mem + 3 * 4);
+			List<Result.Item> items = new List<Result.Item>(NumItems);
+			
+			for (int i = 0; i < NumItems; i++)
+			{
+				Result.ItemFlags flags = MapItemFlags(Marshal.ReadInt32(mem + (5 + i * 2 + 0) * 4));
+				int offset = Marshal.ReadInt32(mem + (5 + i * 2 + 1) * 4);
+
+				string? filename = null;
+				string? path = null;
+				ulong? fileSize = null;
+				DateTime? createDate = null;
+				DateTime? modDate = null;
+
+				// data found at data_offset
+				// if EVERYTHING_IPC_QUERY2_REQUEST_NAME was set in request_flags, DWORD name_length in characters (excluding the null terminator); followed by null terminated text.
+				if ((requestFlags & EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_NAME) == EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_NAME)
+				{
+					int len = Marshal.ReadInt32(mem + offset);
+					offset += 4;
+					filename = Marshal.PtrToStringUni(mem + offset, len);
+					offset += (len + 1) * 2;
+				}
+				// if EVERYTHING_IPC_QUERY2_REQUEST_PATH was set in request_flags, DWORD name_length in characters (excluding the null terminator); followed by null terminated text.
+				if ((requestFlags & EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_PATH) == EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_PATH)
+				{
+					int len = Marshal.ReadInt32(mem + offset);
+					offset += 4;
+					path = Marshal.PtrToStringUni(mem + offset, len);
+					offset += (len + 1) * 2;
+				}
+				// if EVERYTHING_IPC_QUERY2_REQUEST_FULL_PATH_AND_NAME was set in request_flags, DWORD name_length (excluding the null terminator); followed by null terminated text.
+				if ((requestFlags & EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_FULL_PATH_AND_NAME) == EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_FULL_PATH_AND_NAME)
+				{
+					int len = Marshal.ReadInt32(mem + offset);
+					offset += 4;
+					offset += (len + 1) * 2;
+				}
+				// if EVERYTHING_IPC_QUERY2_REQUEST_SIZE was set in request_flags, LARGE_INTERGER size;
+				if ((requestFlags & EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_SIZE) == EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_SIZE)
+				{
+					fileSize = (ulong)Marshal.ReadInt64(mem + offset);
+					offset += 8;
+				}
+				// if EVERYTHING_IPC_QUERY2_REQUEST_EXTENSION was set in request_flags, DWORD name_length in characters (excluding the null terminator); followed by null terminated text;
+				if ((requestFlags & EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_EXTENSION) == EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_EXTENSION)
+				{
+					int len = Marshal.ReadInt32(mem + offset);
+					offset += 4;
+					offset += (len + 1) * 2;
+				}
+				// if EVERYTHING_IPC_QUERY2_REQUEST_TYPE_NAME was set in request_flags, DWORD name_length in characters (excluding the null terminator); followed by null terminated text;
+				// Docu outdated | does not exist
+
+				// if EVERYTHING_IPC_QUERY2_REQUEST_DATE_CREATED was set in request_flags, FILETIME date;
+				if ((requestFlags & EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_DATE_CREATED) == EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_DATE_CREATED)
+				{
+					long timecode = Marshal.ReadInt64(mem + offset);
+					createDate = DateTime.FromFileTime(timecode);
+					offset += 8;
+				}
+				// if EVERYTHING_IPC_QUERY2_REQUEST_DATE_MODIFIED was set in request_flags, FILETIME date;
+				if ((requestFlags & EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_DATE_MODIFIED) == EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_DATE_MODIFIED)
+				{
+					long timecode = Marshal.ReadInt64(mem + offset);
+					modDate = DateTime.FromFileTime(timecode);
+					// offset += 8;
+				}
+
+				if (filename != null && path != null)
+				{
+					items.Add(new ResultItemImplementation(flags, filename, path, fileSize, createDate, modDate));
+				}
+			}
+
+			Result = new ResultImplementation(TotalItems, Offset, items.ToArray());
+
 		}
 
 		private Result.ItemFlags MapItemFlags(int v)

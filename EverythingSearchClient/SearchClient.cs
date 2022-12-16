@@ -121,9 +121,12 @@ namespace EverythingSearchClient
 				throw new InvalidOperationException("Everything service is not available");
 			}
 			MessageReceiverWindow myWnd = new();
-			if (!myWnd.BuildQuery(query, flags, maxResults, offset))
+			if (!myWnd.BuildQuery2(query, flags, maxResults, offset))
 			{
-				throw new Exception("Failed to build search query data structure");
+				if (!myWnd.BuildQuery(query, flags, maxResults, offset))
+				{
+					throw new Exception("Failed to build search query data structure");
+				}
 			}
 			if (IsEverythingBusy())
 			{
@@ -152,7 +155,46 @@ namespace EverythingSearchClient
 			}
 			if (!myWnd.SendQuery(ipcWindow.HWnd))
 			{
-				throw new Exception("Failed to send search query");
+				if (myWnd.QueryVersion == 2)
+				{
+					if (!myWnd.BuildQuery(query, flags, maxResults, offset))
+					{
+						throw new Exception("Failed to build search query data structure");
+					}
+					if (IsEverythingBusy())
+					{
+						switch (whenBusy)
+						{
+							case BehaviorWhenBusy.Continue:
+								// just continue
+								break;
+							case BehaviorWhenBusy.Error:
+								throw new Exception("Everything service is busy");
+							case BehaviorWhenBusy.WaitOrContinue:
+								if (!Wait(timeoutMs))
+								{
+									goto case BehaviorWhenBusy.Continue;
+								}
+								break;
+							case BehaviorWhenBusy.WaitOrError:
+								if (!Wait(timeoutMs))
+								{
+									goto case BehaviorWhenBusy.Error;
+								}
+								break;
+							default:
+								throw new ArgumentException("Unknown whenBusy behavior");
+						}
+					}
+					if (!myWnd.SendQuery(ipcWindow.HWnd))
+					{
+						throw new Exception("Failed to send search query");
+					}
+				}
+				else
+				{
+					throw new Exception("Failed to send search query");
+				}
 			}
 			myWnd.MessagePump();
 

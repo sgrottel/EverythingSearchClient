@@ -103,6 +103,12 @@ namespace EverythingSearchClient
 		internal const uint EVERYTHING_IPC_COPYDATAQUERYW = 2;
 
 		/// <summary>
+		/// the WM_COPYDATA message for a query 2.
+		/// Use the unicode UTF16 variant
+		/// </summary>
+		internal const uint EVERYTHING_IPC_COPYDATA_QUERY2W = 18;
+
+		/// <summary>
 		/// The item is a folder. (it's a file if not set)
 		/// </summary>
 		internal const uint EVERYTHING_IPC_FOLDER = 0x00000001;
@@ -111,6 +117,76 @@ namespace EverythingSearchClient
 		/// the file or folder is a drive/root.
 		/// </summary>
 		internal const uint EVERYTHING_IPC_DRIVE = 0x00000002;
+
+		[StructLayout(LayoutKind.Sequential)]
+		internal struct EVERYTHING_IPC_QUERY2
+		{
+			// the window that will receive the new results.
+			// only 32bits are required to store a window handle. (even on x64)
+			public UInt32 reply_hwnd;
+
+			// the value to set the dwData member in the COPYDATASTRUCT struct 
+			// sent by Everything when the query is complete.
+			public UInt32 reply_copydata_message;
+
+			// search flags (see EVERYTHING_IPC_MATCHCASE | EVERYTHING_IPC_MATCHWHOLEWORD | EVERYTHING_IPC_MATCHPATH)
+			public UInt32 search_flags;
+
+			// only return results after 'offset' results (0 to return from the first result)
+			// useful for scrollable lists
+			public UInt32 offset;
+
+			// the number of results to return 
+			// zero to return no results
+			// EVERYTHING_IPC_ALLRESULTS to return ALL results
+			public UInt32 max_results;
+
+			// request types.
+			// one or more of EVERYTHING_IPC_QUERY2_REQUEST_* types.
+			public UInt32 request_flags;
+
+			// sort type, set to one of EVERYTHING_IPC_SORT_* types.
+			// set to EVERYTHING_IPC_SORT_NAME_ASCENDING for the best performance (there will never be a performance hit when sorting by name ascending).
+			// Other sorts will also be instant if the corresponding fast sort is enabled from Tools -> Options -> Indexes.
+			public UInt32 sort_type;
+
+			// followed by null terminated search.
+		}
+
+		/// <summary>
+		/// Request name string
+		/// </summary>
+		internal const uint EVERYTHING_IPC_QUERY2_REQUEST_NAME = 0x00000001;
+
+		/// <summary>
+		/// Request path string
+		/// </summary>
+		internal const uint EVERYTHING_IPC_QUERY2_REQUEST_PATH = 0x00000002;
+
+		/// <summary>
+		/// Request path-and-name string
+		/// </summary>
+		internal const uint EVERYTHING_IPC_QUERY2_REQUEST_FULL_PATH_AND_NAME = 0x00000004;
+
+		/// <summary>
+		/// request file name extension string
+		/// </summary>
+		internal const uint EVERYTHING_IPC_QUERY2_REQUEST_EXTENSION = 0x00000008;
+
+		/// <summary>
+		/// Request file size
+		/// </summary>
+		internal const uint EVERYTHING_IPC_QUERY2_REQUEST_SIZE = 0x00000010;
+
+		/// <summary>
+		/// Request file creation date
+		/// </summary>
+		internal const uint EVERYTHING_IPC_QUERY2_REQUEST_DATE_CREATED = 0x00000020;
+
+		/// <summary>
+		/// Request file modified date
+		/// </summary>
+		internal const uint EVERYTHING_IPC_QUERY2_REQUEST_DATE_MODIFIED = 0x00000040;
 
 	}
 

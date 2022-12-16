@@ -58,12 +58,18 @@ namespace EverythingSearchClient.TestProject
 			}
 		}
 
+		public DateTime TestCreationTime { get; } = new DateTime(2015, 4, 1, 14, 44, 59);
+
+		public DateTime TestLastWriteTime { get; } = new DateTime(2016, 6, 30, 12, 0, 1);
+
 		private void EnsureFile(DirectoryInfo dir, string filename)
 		{
 			string path = Path.Combine(dir.FullName, filename);
 			if (!File.Exists(path))
 			{
 				File.WriteAllText(path, "Test Data");
+				File.SetCreationTime(path, TestCreationTime);
+				File.SetLastWriteTime(path, TestLastWriteTime);
 			}
 		}
 
