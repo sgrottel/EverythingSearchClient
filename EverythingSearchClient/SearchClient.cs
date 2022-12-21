@@ -99,6 +99,28 @@ namespace EverythingSearchClient
 		}
 
 		/// <summary>
+		/// Setting to restrict which version of the query API of Everything is to be used
+		/// </summary>
+		public enum QueryApi
+		{
+			/// <summary>
+			/// Tries to call the best API first, and might fallback to other on the loss of functionality
+			/// </summary>
+			Any,
+
+			/// <summary>
+			/// Query API (first version) of Everything IPC
+			/// </summary>
+			Query1only,
+
+			/// <summary>
+			/// Query 2 API of Everything IPC offers access to file times and sizes
+			/// This option does not fall back to Query1
+			/// </summary>
+			Query2only
+		}
+
+		/// <summary>
 		/// When used for `maxResults`, indicates to return all items
 		/// </summary>
 		public const uint AllItems = 0xffffffff;
@@ -107,6 +129,8 @@ namespace EverythingSearchClient
 		/// The default timeout is 1 minute
 		/// </summary>
 		public const uint DefaultTimeoutMs = 60 * 1000;
+
+		public QueryApi UseQueryApi { get; set; } = QueryApi.Any;
 
 		/// <summary>
 		/// Issues a search query to the Everything service, waits and returns the Result.
@@ -120,88 +144,85 @@ namespace EverythingSearchClient
 			{
 				throw new InvalidOperationException("Everything service is not available");
 			}
+
+			QueryApi api = UseQueryApi;
+
 			MessageReceiverWindow myWnd = new();
-			if (!myWnd.BuildQuery2(query, flags, maxResults, offset))
+			do
 			{
-				if (!myWnd.BuildQuery(query, flags, maxResults, offset))
+				// prepare query
+				switch (api)
 				{
-					throw new Exception("Failed to build search query data structure");
-				}
-			}
-			if (IsEverythingBusy())
-			{
-				switch (whenBusy)
-				{
-					case BehaviorWhenBusy.Continue:
-						// just continue
-						break;
-					case BehaviorWhenBusy.Error:
-						throw new Exception("Everything service is busy");
-					case BehaviorWhenBusy.WaitOrContinue:
-						if (!Wait(timeoutMs))
+					case QueryApi.Any:
+					case QueryApi.Query2only:
+						if (!myWnd.BuildQuery2(query, flags, maxResults, offset))
 						{
-							goto case BehaviorWhenBusy.Continue;
+							if (api == QueryApi.Any)
+							{
+								api = QueryApi.Query1only;
+								continue;
+							}
+							throw new Exception("Failed to build search query data structure");
 						}
 						break;
-					case BehaviorWhenBusy.WaitOrError:
-						if (!Wait(timeoutMs))
+					case QueryApi.Query1only:
+						if (!myWnd.BuildQuery(query, flags, maxResults, offset))
 						{
-							goto case BehaviorWhenBusy.Error;
+							throw new Exception("Failed to build search query data structure");
 						}
 						break;
-					default:
-						throw new ArgumentException("Unknown whenBusy behavior");
 				}
-			}
-			if (!myWnd.SendQuery(ipcWindow.HWnd))
-			{
-				if (myWnd.QueryVersion == 2)
+
+				// Handle busy state of Everything
+				if (IsEverythingBusy())
 				{
-					if (!myWnd.BuildQuery(query, flags, maxResults, offset))
+					switch (whenBusy)
 					{
-						throw new Exception("Failed to build search query data structure");
-					}
-					if (IsEverythingBusy())
-					{
-						switch (whenBusy)
-						{
-							case BehaviorWhenBusy.Continue:
-								// just continue
-								break;
-							case BehaviorWhenBusy.Error:
-								throw new Exception("Everything service is busy");
-							case BehaviorWhenBusy.WaitOrContinue:
-								if (!Wait(timeoutMs))
-								{
-									goto case BehaviorWhenBusy.Continue;
-								}
-								break;
-							case BehaviorWhenBusy.WaitOrError:
-								if (!Wait(timeoutMs))
-								{
-									goto case BehaviorWhenBusy.Error;
-								}
-								break;
-							default:
-								throw new ArgumentException("Unknown whenBusy behavior");
-						}
-					}
-					if (!myWnd.SendQuery(ipcWindow.HWnd))
-					{
-						throw new Exception("Failed to send search query");
+						case BehaviorWhenBusy.Continue:
+							// just continue
+							break;
+						case BehaviorWhenBusy.Error:
+							throw new Exception("Everything service is busy");
+						case BehaviorWhenBusy.WaitOrContinue:
+							if (!Wait(timeoutMs))
+							{
+								goto case BehaviorWhenBusy.Continue;
+							}
+							break;
+						case BehaviorWhenBusy.WaitOrError:
+							if (!Wait(timeoutMs))
+							{
+								goto case BehaviorWhenBusy.Error;
+							}
+							break;
+						default:
+							throw new ArgumentException("Unknown whenBusy behavior");
 					}
 				}
-				else
+
+				// Send query
+				if (!myWnd.SendQuery(ipcWindow.HWnd))
 				{
+					// if failing
+					if (api == QueryApi.Any)
+					{
+						// retry with lower api
+						api = QueryApi.Query1only;
+						continue;
+					}
 					throw new Exception("Failed to send search query");
 				}
-			}
-			myWnd.MessagePump();
+
+				myWnd.MessagePump();
+
+				// if we reach this point, everything went well!
+			} while (false);
 
 			if (myWnd.Result == null)
 			{
 				throw new Exception("Failed to receive results");
 			}
+
 			return myWnd.Result;
 		}
 
