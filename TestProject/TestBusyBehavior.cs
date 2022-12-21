@@ -52,11 +52,15 @@ namespace EverythingSearchClient.TestProject
 			set { testContextInstance = value; }
 		}
 
-		private uint longTimeout = 0; // SearchClient.DefaultTimeoutMs;
+		private static uint longTimeout = 0; // SearchClient.DefaultTimeoutMs;
 
 		private void EvaluateTimeout()
 		{
-			if (longTimeout > 0) return;
+			if (longTimeout > 0)
+			{
+				TestContext.WriteLine("Long Timeout kept at {0} ms", longTimeout);
+				return;
+			}
 
 			WaitUntilReady();
 			DateTime start = DateTime.Now;

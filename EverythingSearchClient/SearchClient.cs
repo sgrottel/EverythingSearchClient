@@ -154,11 +154,13 @@ namespace EverythingSearchClient
 				switch (api)
 				{
 					case QueryApi.Any:
+						goto case QueryApi.Query2only;
 					case QueryApi.Query2only:
 						if (!myWnd.BuildQuery2(query, flags, maxResults, offset))
 						{
 							if (api == QueryApi.Any)
 							{
+								// fallback to query1 api when creating query2 failed, and any api version allowed
 								api = QueryApi.Query1only;
 								continue;
 							}
