@@ -7,10 +7,10 @@
     <Nullable>enable</Nullable>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Title>Everything Search Client</Title>
-    <Version>0.3.0</Version>
+    <Version>0.4.0</Version>
     <Authors>SGrottel</Authors>
-    <Description>Fully managed search client library for Voidtools' Everything</Description>
-    <Copyright>Copyright 2022, by SGrottel</Copyright>
+    <Description>A .NET client library for Voidtools' Everything search engine, without the native Everything SDK dll.</Description>
+    <Copyright>Copyright 2022-2023, by SGrottel</Copyright>
     <PackageProjectUrl>https://go.grottel.net/EverythingSearchClient</PackageProjectUrl>
     <RepositoryUrl>https://github.com/sgrottel/EverythingSearchClient.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
