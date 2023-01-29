@@ -1,15 +1,15 @@
 # 🔎 EverythingSearchClient
-A fully managed search client library for [Voidtools' Everything](https://www.voidtools.com/).
+A .NET client library for [Voidtools' Everything](https://www.voidtools.com/) search engine, without the native Everything SDK dll.
 
 [![Build & Test](https://github.com/sgrottel/EverythingSearchClient/actions/workflows/dotnet-desktop.yml/badge.svg)](https://github.com/sgrottel/EverythingSearchClient/actions/workflows/dotnet-desktop.yml)
 [![Nuget](https://img.shields.io/nuget/v/EverythingSearchClient)](https://www.nuget.org/packages/EverythingSearchClient)
 [![GitHub](https://img.shields.io/github/license/sgrottel/EverythingSearchClient)](./LICENSE)
 
-I wrote this library, because I wanted a managed .Net solution with a simple interface, which would not depend on the [native code SDK by Voidtools](https://www.voidtools.com/support/everything/sdk/).
+I wrote this library, because I wanted a managed .NET solution with a simple interface, which would not depend on the [native code SDK by Voidtools](https://www.voidtools.com/support/everything/sdk/).
 I wanted to have _**one AnyCpu Dll**_ to do the job.
 
 So, this library uses a message-only window and the [IPC mechanism](https://www.voidtools.com/support/everything/sdk/ipc/) to communicate between your application and the Everything service.
-This way, the dependencies and P/Invoke class are limited to functions of the Windows OS and the official .Net runtime.
+This way, the dependencies and P/Invoke class are limited to functions of the Windows OS and the official .NET runtime.
 
 Everything service must be running on your machine.
 
@@ -227,7 +227,7 @@ If you want to ask me something, feel free to reach out to me via e-mail.
 ## License
 This project is freely available under the terms of the [Apache License v.2.0](./LICENSE):
 
-> Copyright 2022 SGrottel
+> Copyright 2022-2023 SGrottel
 >
 > Licensed under the Apache License, Version 2.0 (the "License");
 > you may not use this file except in compliance with the License.
