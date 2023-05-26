@@ -169,7 +169,7 @@ namespace EverythingSearchClient
 		internal const uint EVERYTHING_IPC_QUERY2_REQUEST_FULL_PATH_AND_NAME = 0x00000004;
 
 		/// <summary>
-		/// request file name extension string
+		/// Request file name extension string
 		/// </summary>
 		internal const uint EVERYTHING_IPC_QUERY2_REQUEST_EXTENSION = 0x00000008;
 
@@ -187,6 +187,66 @@ namespace EverythingSearchClient
 		/// Request file modified date
 		/// </summary>
 		internal const uint EVERYTHING_IPC_QUERY2_REQUEST_DATE_MODIFIED = 0x00000040;
+
+		/// <summary>
+		/// Sort results by file name ascending
+		/// </summary>
+		internal const uint EVERYTHING_IPC_SORT_NAME_ASCENDING = 1;
+
+		/// <summary>
+		/// Sort results by file name name decending
+		/// </summary>
+		internal const uint EVERYTHING_IPC_SORT_NAME_DESCENDING = 2;
+
+		/// <summary>
+		/// Sort results by full path ascending
+		/// </summary>
+		internal const uint EVERYTHING_IPC_SORT_PATH_ASCENDING = 3;
+
+		/// <summary>
+		/// Sort results by full path decending
+		/// </summary>
+		internal const uint EVERYTHING_IPC_SORT_PATH_DESCENDING = 4;
+
+		/// <summary>
+		/// Sort results by file size ascending
+		/// </summary>
+		internal const uint EVERYTHING_IPC_SORT_SIZE_ASCENDING = 5;
+
+		/// <summary>
+		/// Sort results by file size decending
+		/// </summary>
+		internal const uint EVERYTHING_IPC_SORT_SIZE_DESCENDING = 6;
+
+		/// <summary>
+		/// Sort results by extension ascending
+		/// </summary>
+		internal const uint EVERYTHING_IPC_SORT_EXTENSION_ASCENDING = 7;
+
+		/// <summary>
+		/// Sort results by extension decending
+		/// </summary>
+		internal const uint EVERYTHING_IPC_SORT_EXTENSION_DESCENDING = 8;
+
+		/// <summary>
+		/// Sort results by creation date ascending
+		/// </summary>
+		internal const uint EVERYTHING_IPC_SORT_DATE_CREATED_ASCENDING = 11;
+
+		/// <summary>
+		/// Sort results by creation date decending
+		/// </summary>
+		internal const uint EVERYTHING_IPC_SORT_DATE_CREATED_DESCENDING = 12;
+
+		/// <summary>
+		/// Sort results by date of last modification ascending
+		/// </summary>
+		internal const uint EVERYTHING_IPC_SORT_DATE_MODIFIED_ASCENDING = 13;
+
+		/// <summary>
+		/// Sort results by date of last modification decending
+		/// </summary>
+		internal const uint EVERYTHING_IPC_SORT_DATE_MODIFIED_DESCENDING = 14;
 
 	}
 
