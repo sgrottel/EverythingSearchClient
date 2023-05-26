@@ -26,9 +26,20 @@ namespace EverythingSearchClient.TestProject
 			Assert.IsTrue(r.Items[0].CreationTime.HasValue);
 			Assert.IsTrue(r.Items[0].LastWriteTime.HasValue);
 
-			Assert.AreEqual<ulong>(9, r.Items[0].Size ?? 0);
-			Assert.AreEqual(data.TestCreationTime, r.Items[0].CreationTime);
-			Assert.AreEqual(data.TestLastWriteTime, r.Items[0].LastWriteTime);
+			int idx = -1;
+			for (int i = 0; i < r.NumItems; ++i)
+			{
+				if (r.Items[i].Name.Equals("fileA.html"))
+				{
+					idx = i;
+					break;
+				}
+			}
+
+			Assert.AreEqual("fileA.html", r.Items[idx].Name);
+			Assert.AreEqual<ulong>(9 + 2, r.Items[idx].Size ?? 0);
+			Assert.AreEqual(data.TestCreationTime + TimeSpan.FromDays(3), r.Items[idx].CreationTime);
+			Assert.AreEqual(data.TestLastWriteTime + TimeSpan.FromDays(6), r.Items[idx].LastWriteTime);
 		}
 
 	}

@@ -23,18 +23,18 @@ namespace EverythingSearchClient.TestProject
 
 			// If you edit this list of test directories and file, it will affect the expected results of all tests!
 			DirectoryInfo root = EnsureDir(TestDataRootDirectory);
-			EnsureFile(root, "FileA.txt");
-			EnsureFile(root, "FileB.txt");
-			EnsureFile(root, "FileC.xml");
+			EnsureFile(root, "FileA.txt", 8, 1, 7);
+			EnsureFile(root, "FileB.txt", 1, 2, 3);
+			EnsureFile(root, "FileC.xml", 5, 0, 2);
 			DirectoryInfo sub1 = EnsureDir(root, "SubDir1");
-			EnsureFile(sub1, "fileA.jpg");
-			EnsureFile(sub1, "FileD.gif");
+			EnsureFile(sub1, "fileA.jpg", 0, 5, 4);
+			EnsureFile(sub1, "FileD.gif", 3, 6, 0);
 			DirectoryInfo sub2 = EnsureDir(root, "SubDir2");
-			EnsureFile(sub2, "fileA.html");
-			EnsureFile(sub2, "FileE.dat");
+			EnsureFile(sub2, "fileA.html", 2, 3, 6);
+			EnsureFile(sub2, "FileE.dat", 6, 7, 8);
 			DirectoryInfo sub2sub = EnsureDir(sub2, "SubSubDirA");
-			EnsureFile(sub2sub, "FileA.json");
-			EnsureFile(sub2sub, "FileF.txt");
+			EnsureFile(sub2sub, "FileA.json", 7, 8, 5);
+			EnsureFile(sub2sub, "FileF.txt", 4, 4, 1);
 
 			// We need to wait for EverythingIndex to be built up
 			SearchClient everything = new();
@@ -62,14 +62,14 @@ namespace EverythingSearchClient.TestProject
 
 		public DateTime TestLastWriteTime { get; } = new DateTime(2016, 6, 30, 12, 0, 1);
 
-		private void EnsureFile(DirectoryInfo dir, string filename)
+		private void EnsureFile(DirectoryInfo dir, string filename, int size, int creationOffset, int modifiedOffset)
 		{
 			string path = Path.Combine(dir.FullName, filename);
 			if (!File.Exists(path))
 			{
-				File.WriteAllText(path, "Test Data");
-				File.SetCreationTime(path, TestCreationTime);
-				File.SetLastWriteTime(path, TestLastWriteTime);
+				File.WriteAllText(path, "Test Data" + new string('X', size));
+				File.SetCreationTime(path, TestCreationTime + TimeSpan.FromDays(creationOffset));
+				File.SetLastWriteTime(path, TestLastWriteTime + TimeSpan.FromDays(modifiedOffset));
 			}
 		}
 
