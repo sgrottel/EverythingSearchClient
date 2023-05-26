@@ -87,6 +87,10 @@ namespace EverythingSearchClient.TestProject
 			bool search1Complete = false;
 			bool search1Failed = false;
 
+			Result blocker = everything2.Search("File " + data.TestDataRootDirectory);
+			Assert.AreEqual<uint>(9, blocker.TotalItems);
+			WaitUntilReady();
+
 			Thread t = new(() =>
 			{
 				try
