@@ -61,6 +61,29 @@ namespace EverythingSearchClient
 		}
 
 		/// <summary>
+		/// Sort results by one of these attributes
+		/// </summary>
+		public enum SortBy
+		{
+			None,
+			Name,
+			Path,
+			Size,
+			Extension,
+			DateCreated,
+			DateModified
+		}
+
+		/// <summary>
+		/// Define results sort order direction
+		/// </summary>
+		public enum SortDirection
+		{
+			Ascending,
+			Decending
+		}
+
+		/// <summary>
 		/// Defines what the client should do when the Everything service is busy
 		/// </summary>
 		public enum BehaviorWhenBusy
@@ -138,7 +161,15 @@ namespace EverythingSearchClient
 		/// <param name="query">The Everything query string</param>
 		/// <param name="timeoutMs">Wait timeout in milliseconds. Is only used when `whenBusy` is one of the `Wait*` options.</param>
 		/// <exception cref="InvalidOperationException">When Everything is not available</exception>
-		public Result Search(string query, SearchFlags flags = SearchFlags.None, uint maxResults = AllItems, uint offset = 0, BehaviorWhenBusy whenBusy = BehaviorWhenBusy.WaitOrError, uint timeoutMs = DefaultTimeoutMs)
+		public Result Search(
+			string query,
+			SearchFlags flags = SearchFlags.None,
+			uint maxResults = AllItems,
+			uint offset = 0,
+			BehaviorWhenBusy whenBusy = BehaviorWhenBusy.WaitOrError,
+			uint timeoutMs = DefaultTimeoutMs,
+			SortBy sortBy = SortBy.None,
+			SortDirection sortDirection = SortDirection.Ascending)
 		{
 			if (!IsEverythingAvailable())
 			{
@@ -156,7 +187,7 @@ namespace EverythingSearchClient
 					case QueryApi.Any:
 						goto case QueryApi.Query2only;
 					case QueryApi.Query2only:
-						if (!myWnd.BuildQuery2(query, flags, maxResults, offset))
+						if (!myWnd.BuildQuery2(query, flags, maxResults, offset, sortBy, sortDirection))
 						{
 							if (api == QueryApi.Any)
 							{

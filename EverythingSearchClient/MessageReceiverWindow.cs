@@ -222,7 +222,13 @@ namespace EverythingSearchClient
 			return rawQueryData.Length > 0;
 		}
 
-		internal bool BuildQuery2(string query, SearchClient.SearchFlags flags, uint maxResults, uint offset)
+		internal bool BuildQuery2(
+			string query,
+			SearchClient.SearchFlags flags,
+			uint maxResults,
+			uint offset,
+			SearchClient.SortBy sortBy,
+			SearchClient.SortDirection sortDirection)
 		{
 			var f = requests.Find((x) => x.Item2 == this);
 			if (f == null)
@@ -249,6 +255,42 @@ namespace EverythingSearchClient
 				| EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_SIZE
 				| EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_DATE_CREATED
 				| EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_DATE_MODIFIED;
+			if (sortBy != SearchClient.SortBy.None)
+			{
+				switch (sortBy)
+				{
+					case SearchClient.SortBy.Name:
+						q2.sort_type = (sortDirection == SearchClient.SortDirection.Ascending)
+							? EverythingIPC.EVERYTHING_IPC_SORT_NAME_ASCENDING
+							: EverythingIPC.EVERYTHING_IPC_SORT_NAME_DESCENDING;
+						break;
+					case SearchClient.SortBy.Path:
+						q2.sort_type = (sortDirection == SearchClient.SortDirection.Ascending)
+							? EverythingIPC.EVERYTHING_IPC_SORT_PATH_ASCENDING
+							: EverythingIPC.EVERYTHING_IPC_SORT_PATH_DESCENDING;
+						break;
+					case SearchClient.SortBy.Size:
+						q2.sort_type = (sortDirection == SearchClient.SortDirection.Ascending)
+							? EverythingIPC.EVERYTHING_IPC_SORT_SIZE_ASCENDING
+							: EverythingIPC.EVERYTHING_IPC_SORT_SIZE_DESCENDING;
+						break;
+					case SearchClient.SortBy.Extension:
+						q2.sort_type = (sortDirection == SearchClient.SortDirection.Ascending)
+							? EverythingIPC.EVERYTHING_IPC_SORT_EXTENSION_ASCENDING
+							: EverythingIPC.EVERYTHING_IPC_SORT_EXTENSION_DESCENDING;
+						break;
+					case SearchClient.SortBy.DateCreated:
+						q2.sort_type = (sortDirection == SearchClient.SortDirection.Ascending)
+							? EverythingIPC.EVERYTHING_IPC_SORT_DATE_CREATED_ASCENDING
+							: EverythingIPC.EVERYTHING_IPC_SORT_DATE_CREATED_DESCENDING;
+						break;
+					case SearchClient.SortBy.DateModified:
+						q2.sort_type = (sortDirection == SearchClient.SortDirection.Ascending)
+							? EverythingIPC.EVERYTHING_IPC_SORT_DATE_MODIFIED_ASCENDING
+							: EverythingIPC.EVERYTHING_IPC_SORT_DATE_MODIFIED_DESCENDING;
+						break;
+				}
+			}
 
 			int querySize = Marshal.SizeOf<EverythingIPC.EVERYTHING_IPC_QUERY2>();
 			int rawQuerySize = querySize + 2 * (query.Length + 1);
