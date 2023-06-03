@@ -190,6 +190,8 @@ If you want to get your application into this list, I am happy to accept pull re
 
 * [Checkouts Overview (https://github.com/sgrottel/checkouts-overview)](https://github.com/sgrottel/checkouts-overview)
   > Overview dashboard app for source code repository checkouts.
+* [FolderSummary in Tiny Tools Collection (https://github.com/sgrottel/tiny-tools-collection)](https://github.com/sgrottel/tiny-tools-collection)
+  > Simple C# app to summarize the content of a folder (recursively) into a Json file.
 * 🚧 TODO: List my apps using the lib in alphabetic order
 
 ## Alternatives
