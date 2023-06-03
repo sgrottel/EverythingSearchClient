@@ -254,7 +254,8 @@ namespace EverythingSearchClient
 				| EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_PATH
 				| EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_SIZE
 				| EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_DATE_CREATED
-				| EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_DATE_MODIFIED;
+				| EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_DATE_MODIFIED
+				| EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_ATTRIBUTES;
 			if (sortBy != SearchClient.SortBy.None)
 			{
 				switch (sortBy)
@@ -460,7 +461,15 @@ namespace EverythingSearchClient
 				Name = filename;
 				Path = path;
 			}
-			public ResultItemImplementation(Result.ItemFlags flags, string filename, string path, ulong? fileSize, DateTime? createTime, DateTime? lastWriteTime)
+
+			public ResultItemImplementation(
+				Result.ItemFlags flags,
+				string filename,
+				string path,
+				ulong? fileSize,
+				DateTime? createTime,
+				DateTime? lastWriteTime,
+				uint? attributes)
 			{
 				Flags = flags;
 				Name = filename;
@@ -468,6 +477,10 @@ namespace EverythingSearchClient
 				Size = fileSize;
 				CreationTime = createTime;
 				LastWriteTime = lastWriteTime;
+				if (attributes.HasValue)
+				{
+					FileAttributes = (Result.ItemFileAttributes)attributes.Value;
+				}
 			}
 		}
 
@@ -523,6 +536,7 @@ namespace EverythingSearchClient
 				ulong? fileSize = null;
 				DateTime? createDate = null;
 				DateTime? modDate = null;
+				uint? fileAttributes = null;
 
 				// data found at data_offset
 				// if EVERYTHING_IPC_QUERY2_REQUEST_NAME was set in request_flags, DWORD name_length in characters (excluding the null terminator); followed by null terminated text.
@@ -590,12 +604,23 @@ namespace EverythingSearchClient
 					{
 						modDate = null;
 					}
-					// offset += 8;
+					offset += 8;
+				}
+				// if EVERYTHING_IPC_QUERY2_REQUEST_DATE_ACCESSED was set in request_flags, FILETIME date;
+				if ((requestFlags & EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_DATE_ACCESSED) == EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_DATE_ACCESSED)
+				{
+					offset += 8;
+				}
+				// if EVERYTHING_IPC_QUERY2_REQUEST_ATTRIBUTES was set in request_flags, DWORD attributes;
+				if ((requestFlags & EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_ATTRIBUTES) == EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_ATTRIBUTES)
+				{
+					fileAttributes = (uint)Marshal.ReadInt32(mem + offset);
+					// offset += 4;
 				}
 
 				if (filename != null && path != null)
 				{
-					items.Add(new ResultItemImplementation(flags, filename, path, fileSize, createDate, modDate));
+					items.Add(new ResultItemImplementation(flags, filename, path, fileSize, createDate, modDate, fileAttributes));
 				}
 			}
 

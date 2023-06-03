@@ -25,6 +25,7 @@ namespace EverythingSearchClient.TestProject
 			Assert.IsTrue(r.Items[0].Size.HasValue);
 			Assert.IsTrue(r.Items[0].CreationTime.HasValue);
 			Assert.IsTrue(r.Items[0].LastWriteTime.HasValue);
+			Assert.IsTrue(r.Items[0].FileAttributes.HasValue);
 
 			int idx = -1;
 			for (int i = 0; i < r.NumItems; ++i)
@@ -40,6 +41,13 @@ namespace EverythingSearchClient.TestProject
 			Assert.AreEqual<ulong>(9 + 2, r.Items[idx].Size ?? 0);
 			Assert.AreEqual(data.TestCreationTime + TimeSpan.FromDays(3), r.Items[idx].CreationTime);
 			Assert.AreEqual(data.TestLastWriteTime + TimeSpan.FromDays(6), r.Items[idx].LastWriteTime);
+			var attr = r.Items[idx].FileAttributes;
+			Assert.IsTrue(attr.HasValue);
+			if (attr.HasValue)
+			{
+				Assert.IsTrue(attr.Value.HasFlag(Result.ItemFileAttributes.Hidden));
+				Assert.IsTrue(attr.Value.HasFlag(Result.ItemFileAttributes.Archive));
+			}
 		}
 
 	}
