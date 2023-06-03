@@ -42,6 +42,50 @@ namespace EverythingSearchClient
 		}
 
 		/// <summary>
+		/// File attribute flags
+		/// </summary>
+		[Flags]
+		public enum ItemFileAttributes
+		{
+			/// <summary>
+			/// No file attributes are set
+			/// </summary>
+			None = 0,
+
+			/// <summary>
+			/// The file is read-only.
+			/// </summary>
+			ReadOnly = 1,
+
+			/// <summary>
+			/// The file is hidden, and thus is not included in an ordinary directory listing.
+			/// </summary>
+			Hidden = 2,
+
+			/// <summary>
+			/// The file is a system file.
+			/// </summary>
+			System = 4,
+
+			/// <summary>
+			/// The file is a directory.
+			/// </summary>
+			Directory = 16,
+
+			/// <summary>
+			/// This file is marked to be included in incremental backup operation.
+			/// </summary>
+			Archive = 32,
+
+			/// <summary>
+			/// The file is a standard file that has no special attributes.
+			/// This attribute is valid only if it is used alone.
+			/// </summary>
+			Normal = 128
+
+		}
+
+		/// <summary>
 		/// Description of one item
 		/// </summary>
 		public class Item
@@ -76,6 +120,11 @@ namespace EverythingSearchClient
 			/// Gets the optional date time of the last file modification
 			/// </summary>
 			public DateTime? LastWriteTime { get; protected set; } = null;
+
+			/// <summary>
+			/// Gets the optional file attributes
+			/// </summary>
+			public ItemFileAttributes? FileAttributes { get; protected set; } = null;
 
 		}
 

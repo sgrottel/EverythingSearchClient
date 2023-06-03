@@ -189,6 +189,16 @@ namespace EverythingSearchClient
 		internal const uint EVERYTHING_IPC_QUERY2_REQUEST_DATE_MODIFIED = 0x00000040;
 
 		/// <summary>
+		/// Request file attributes
+		/// </summary>
+		internal const uint EVERYTHING_IPC_QUERY2_REQUEST_DATE_ACCESSED = 0x00000080;
+
+		/// <summary>
+		/// Request file attributes
+		/// </summary>
+		internal const uint EVERYTHING_IPC_QUERY2_REQUEST_ATTRIBUTES = 0x00000100;
+
+		/// <summary>
 		/// Sort results by file name ascending
 		/// </summary>
 		internal const uint EVERYTHING_IPC_SORT_NAME_ASCENDING = 1;

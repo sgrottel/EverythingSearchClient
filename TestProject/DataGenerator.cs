@@ -31,6 +31,7 @@ namespace EverythingSearchClient.TestProject
 			EnsureFile(sub1, "FileD.gif", 3, 6, 0);
 			DirectoryInfo sub2 = EnsureDir(root, "SubDir2");
 			EnsureFile(sub2, "fileA.html", 2, 3, 6);
+			File.SetAttributes(Path.Combine(sub2.FullName, "fileA.html"), FileAttributes.Hidden | FileAttributes.Archive);
 			EnsureFile(sub2, "FileE.dat", 6, 7, 8);
 			DirectoryInfo sub2sub = EnsureDir(sub2, "SubSubDirA");
 			EnsureFile(sub2sub, "FileA.json", 7, 8, 5);
