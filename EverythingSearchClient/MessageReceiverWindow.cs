@@ -582,13 +582,16 @@ namespace EverythingSearchClient
 				if ((requestFlags & EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_DATE_CREATED) == EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_DATE_CREATED)
 				{
 					long timecode = Marshal.ReadInt64(mem + offset);
-					try
+					if (timecode > 0)
 					{
-						createDate = DateTime.FromFileTime(timecode);
-					}
-					catch
-					{
-						createDate = null;
+						try
+						{
+							createDate = DateTime.FromFileTime(timecode);
+						}
+						catch
+						{
+							createDate = null;
+						}
 					}
 					offset += 8;
 				}
