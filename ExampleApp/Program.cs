@@ -31,6 +31,8 @@ namespace EverythingSearchClient.Example
 					Console.WriteLine("\t\t{0} | {1}", item.Flags, item.Path);
 				}
 
+				res = search.Search("C:\\Windows file: " + SearchClient.FilterAudio);
+				Console.WriteLine("\nFound {0} Windows sound files:", res.NumItems);
 			}
 			catch (Exception ex)
 			{
