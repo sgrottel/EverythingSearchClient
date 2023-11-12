@@ -167,6 +167,19 @@ class SearchClient
 ```
 Your application should first check if Everything is generally `Available`, and should check if it's `Busy` before trying to submit a search query (to avoid unexpected wait times).
 
+In addition, you can use:
+```csharp
+class ServiceControl
+{
+	// ...
+	static bool IsServiceInstalled()
+
+	static bool IsServiceRunning()
+	// ...
+}
+```
+to check if the system service of Everything is installed and available.
+
 ## How to Build
 There are several projects in this repository.
 All use Visual Studio solutions.
