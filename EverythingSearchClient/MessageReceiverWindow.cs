@@ -148,6 +148,14 @@ namespace EverythingSearchClient
 		[DllImport("user32.dll", CharSet = CharSet.Auto)]
 		private static extern uint SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
 
+		public enum ChangeWindowMessageFilterExAction : uint
+		{
+			Reset = 0, Allow = 1, DisAllow = 2
+		};
+
+		[DllImport("user32.dll", SetLastError = true)]
+		public static extern bool ChangeWindowMessageFilterEx(IntPtr hWnd, uint msg, ChangeWindowMessageFilterExAction action, IntPtr changeInfo);
+
 		#endregion
 
 		#endregion
@@ -164,6 +172,9 @@ namespace EverythingSearchClient
 				int ec = Marshal.GetLastPInvokeError();
 				throw new InvalidOperationException($"Window not initialized {ec}");
 			}
+
+			// Allow unelevated EverythingIPC-Windows to send data to this potentially elevated user window
+			ChangeWindowMessageFilterEx(hWnd, WM_COPYDATA, ChangeWindowMessageFilterExAction.Allow, IntPtr.Zero);
 
 			requests.Add(new((uint)new Random().Next(), this));
 		}
