@@ -43,9 +43,9 @@ namespace EverythingSearchClient.TestProject
 			DateTime startWaiting = DateTime.Now;
 			while (res.TotalItems == 0)
 			{
-				if ((DateTime.Now - startWaiting).TotalMinutes > 5.0)
+				if ((DateTime.Now - startWaiting).TotalMinutes > 30.0)
 				{
-					throw new Exception("Everything file indexing took longer than 5 minutes");
+					throw new Exception("Everything file indexing took longer than 30 minutes");
 				}
 				Thread.Sleep(20);
 				try
