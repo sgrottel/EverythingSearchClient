@@ -7,7 +7,7 @@
     <Nullable>enable</Nullable>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Title>Everything Search Client</Title>
-    <Version>0.6.0</Version>
+    <Version>0.7.0</Version>
     <Authors>SGrottel</Authors>
     <Description>A .NET client library for Voidtools' Everything search engine, without the native Everything SDK dll.</Description>
     <Copyright>Copyright 2022-2023, by SGrottel</Copyright>
