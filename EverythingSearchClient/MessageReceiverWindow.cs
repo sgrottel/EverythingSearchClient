@@ -102,6 +102,7 @@ namespace EverythingSearchClient
 		#region Window Messages
 
 		private const uint WM_COPYDATA = 0x004A;
+		private const uint WM_CLOSE = 0x0010;
 
 		[DllImport("user32.dll")]
 		static extern void PostQuitMessage(int nExitCode);
@@ -160,8 +161,8 @@ namespace EverythingSearchClient
 			hWnd = CreateWindowExW(0, WindowClassName, "", 0, 0, 0, 0, 0, IntPtr.Zero, IntPtr.Zero, hInst, IntPtr.Zero);
 			if (hWnd == IntPtr.Zero)
 			{
-				int ec = Marshal.GetLastWin32Error();
-				throw new InvalidOperationException("Window not initialized");
+				int ec = Marshal.GetLastPInvokeError();
+				throw new InvalidOperationException($"Window not initialized {ec}");
 			}
 
 			requests.Add(new((uint)new Random().Next(), this));
@@ -375,28 +376,18 @@ namespace EverythingSearchClient
 		internal void MessagePump()
 		{
 			NativeMessage msg;
-			bool running = true;
 			int ret;
 
-			while (running)
+			while ((ret = GetMessage(out msg, IntPtr.Zero, 0, 0)) != 0)
 			{
-				WaitMessage();
-				while (PeekMessage(out msg, IntPtr.Zero, 0, 0, 0))
+				if (ret == -1)
 				{
-					ret = GetMessage(out msg, IntPtr.Zero, 0, 0);
-					if (ret == -1)
-					{
-						running = false;
-						break;
-					}
-					if (ret == 0)
-					{
-						running = false;
-						break;
-					}
-					TranslateMessage(ref msg);
-					DispatchMessage(ref msg);
+					// illegal window handle
+					break;
 				}
+
+				TranslateMessage(ref msg);
+				DispatchMessage(ref msg);
 			}
 		}
 
@@ -404,6 +395,11 @@ namespace EverythingSearchClient
 
 		private static IntPtr ReceiverWndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
 		{
+			if (msg == WM_CLOSE)
+			{
+				PostQuitMessage(0);
+			}
+			else
 			if (msg == WM_COPYDATA)
 			{
 				COPYDATASTRUCT data = Marshal.PtrToStructure<COPYDATASTRUCT>(lParam);
@@ -432,12 +428,10 @@ namespace EverythingSearchClient
 				int ec = Marshal.GetLastWin32Error();
 				if (atom == 0)
 				{
-					throw new Exception("Failed to register response message-only window class");
+					throw new Exception($"Failed to register response message-only window class {ec}");
 				}
 
-				wcex = new();
 				GetClassInfoW(hInst, WindowClassName, ref wc);
-
 			}
 		}
 
@@ -647,6 +641,11 @@ namespace EverythingSearchClient
 				f |= Result.ItemFlags.Unknown;
 			}
 			return f;
+		}
+
+		internal void SendClose()
+		{
+			SendMessage(hWnd, WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
 		}
 	}
 
