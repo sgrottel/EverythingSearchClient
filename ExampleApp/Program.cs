@@ -21,9 +21,15 @@ namespace EverythingSearchClient.Example
 					Console.WriteLine("\tBusy! Issuing a search query might abort the currently running query.");
 				}
 
+				Console.WriteLine("\trunning as {0}",
+					(ServiceControl.IsServiceInstalled() && ServiceControl.IsServiceRunning())
+					? "Service"
+					: "User Process");
+
+				// TryServiceRestart();
+
 				SearchClient search = new();
 				Result res = search.Search("^\\.git$", SearchClient.SearchFlags.RegEx);
-
 				Console.WriteLine("\nFound {0} items:", res.NumItems);
 				foreach (Result.Item item in res.Items)
 				{
@@ -32,12 +38,38 @@ namespace EverythingSearchClient.Example
 				}
 
 				res = search.Search("C:\\Windows file: " + SearchClient.FilterAudio);
-				Console.WriteLine("\nFound {0} Windows sound files:", res.NumItems);
+				Console.WriteLine("\nFound {0} Windows sound files", res.NumItems);
 			}
 			catch (Exception ex)
 			{
 				Console.WriteLine("\nEXCEPTION: {0}", ex);
 			}
 		}
+
+		private static void TryServiceRestart()
+		{
+			try
+			{
+				if (ServiceControl.IsServiceRunning())
+				{
+					Console.Write("Stopping service ...");
+					ServiceControl.Stop();
+					while (ServiceControl.IsServiceRunning()) Thread.Sleep(100);
+					Console.WriteLine(" done");
+				}
+				if (ServiceControl.IsServiceInstalled() && !ServiceControl.IsServiceRunning())
+				{
+					Console.Write("Starting service ...");
+					ServiceControl.Start();
+					while (!ServiceControl.IsServiceRunning()) Thread.Sleep(100);
+					Console.WriteLine(" done");
+				}
+			}
+			catch (Exception ex2)
+			{
+				Console.WriteLine("Exception controlling Everything service: {0}", ex2);
+			}
+		}
+
 	}
 }

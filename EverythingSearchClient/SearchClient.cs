@@ -44,7 +44,6 @@ namespace EverythingSearchClient
 		/// <summary>
 		/// Checks if the Everything service is available
 		/// </summary>
-		/// <returns></returns>
 		public static bool IsEverythingAvailable()
 		{
 			if (!ipcWindow.IsAvailable)
