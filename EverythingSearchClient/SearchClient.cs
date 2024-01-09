@@ -304,7 +304,7 @@ namespace EverythingSearchClient
 
 			if (myWnd.Result == null)
 			{
-				throw new Exception("Failed to receive results");
+				throw new ResultsNotReceivedException();
 			}
 
 			return myWnd.Result;
@@ -321,7 +321,7 @@ namespace EverythingSearchClient
 						// just continue
 						break;
 					case BehaviorWhenBusy.Error:
-						throw new Exception("Everything service is busy");
+						throw new EverythingBusyException();
 					case BehaviorWhenBusy.WaitOrContinue:
 						if (!Wait(timeoutMs))
 						{
