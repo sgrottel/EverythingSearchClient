@@ -242,7 +242,7 @@ If you want to ask me something, feel free to reach out to me via e-mail.
 ## License
 This project is freely available under the terms of the [Apache License v.2.0](./LICENSE):
 
-> Copyright 2022-2023 SGrottel
+> Copyright 2022-2024 SGrottel
 >
 > Licensed under the Apache License, Version 2.0 (the "License");
 > you may not use this file except in compliance with the License.

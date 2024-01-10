@@ -103,6 +103,7 @@ namespace EverythingSearchClient
 
 		private const uint WM_COPYDATA = 0x004A;
 		private const uint WM_CLOSE = 0x0010;
+		private const uint WM_USER = 0x0400;
 
 		[DllImport("user32.dll")]
 		static extern void PostQuitMessage(int nExitCode);
@@ -145,8 +146,11 @@ namespace EverythingSearchClient
 			public IntPtr lpData;
 		}
 
-		[DllImport("user32.dll", CharSet = CharSet.Auto)]
+		[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
 		private static extern uint SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+
+		[DllImport("User32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+		internal static extern IntPtr PostMessage(IntPtr hwnd, uint msg, IntPtr wparam, IntPtr lparam);
 
 		public enum ChangeWindowMessageFilterExAction : uint
 		{
@@ -394,6 +398,13 @@ namespace EverythingSearchClient
 				if (ret == -1)
 				{
 					// illegal window handle
+					break;
+				}
+
+				if (msg.msg == WM_USER)
+				{
+					// use WM_USER as additional push for a graceful close
+					PostQuitMessage(0);
 					break;
 				}
 
@@ -656,7 +667,12 @@ namespace EverythingSearchClient
 
 		internal void SendClose()
 		{
-			SendMessage(hWnd, WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
+			// Potential race condition fixed:
+			// Using PostMessage here,
+			// since the message pump might already have been exited because the window is already closing
+			// (because it might have received the results).
+			PostMessage(hWnd, WM_USER, IntPtr.Zero, IntPtr.Zero);
+			PostMessage(hWnd, WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
 		}
 	}
 
