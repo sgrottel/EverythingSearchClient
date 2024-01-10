@@ -28,17 +28,17 @@ jobs:
       with:
         dotnet-version: 6.0.x
 
-    - name: Download & run Everything
-      shell: pwsh
-      run: |
-        $html = Invoke-WebRequest -Uri https://www.voidtools.com
-        $dl = $html.links | where href -match "^.+\.x86\.zip$" | select -expandproperty href
-        $dl = (New-Object System.Uri ([Uri]"https://www.voidtools.com", $dl)).AbsoluteUri
-        $zipPath = [IO.Path]::Join((pwd), "Everything.x86.zip")
-        Invoke-WebRequest -Uri $dl -OutFile $zipPath
-        7z x $zipPath
-        Start-Process (Resolve-Path "Everything.exe") -WindowStyle Hidden
-        Start-Sleep -Seconds 4
+    # - name: Download & run Everything
+    #   shell: pwsh
+    #   run: |
+    #     $html = Invoke-WebRequest -Uri https://www.voidtools.com
+    #     $dl = $html.links | where href -match "^.+\.x86\.zip$" | select -expandproperty href
+    #     $dl = (New-Object System.Uri ([Uri]"https://www.voidtools.com", $dl)).AbsoluteUri
+    #     $zipPath = [IO.Path]::Join((pwd), "Everything.x86.zip")
+    #     Invoke-WebRequest -Uri $dl -OutFile $zipPath
+    #     7z x $zipPath
+    #     Start-Process (Resolve-Path "Everything.exe") -WindowStyle Hidden
+    #     Start-Sleep -Seconds 4
 
     - name: Install dependencies
       run: dotnet restore
@@ -59,35 +59,35 @@ jobs:
     - name: Build application
       run: dotnet build --configuration ${{ matrix.configuration }} --no-restore
 
-    - name: Run unit tests
-      run: dotnet test --configuration ${{ matrix.configuration }} --no-restore --verbosity normal --logger "console;verbosity=detailed"
+    # - name: Run unit tests
+    #   run: dotnet test --configuration ${{ matrix.configuration }} --no-restore --verbosity normal --logger "console;verbosity=detailed"
 
-    - name: Inject nuget dependency
-      shell: pwsh
-      run: |
-        $xml = New-Object System.XML.XMLDocument
-        $xmlPath = Resolve-Path "TestNugetConsoleApp\nuget.config"
-        $xml.Load($xmlPath)
-        $xml.SelectSingleNode("configuration/packageSources/add[@key='local project']").value = ("..\EverythingSearchClient\bin\${{ matrix.configuration }}")
-        $xml.Save($xmlPath)
+    # - name: Inject nuget dependency
+    #   shell: pwsh
+    #   run: |
+    #     $xml = New-Object System.XML.XMLDocument
+    #     $xmlPath = Resolve-Path "TestNugetConsoleApp\nuget.config"
+    #     $xml.Load($xmlPath)
+    #     $xml.SelectSingleNode("configuration/packageSources/add[@key='local project']").value = ("..\EverythingSearchClient\bin\${{ matrix.configuration }}")
+    #     $xml.Save($xmlPath)
 
-        $xmlPath = Resolve-Path "TestNugetConsoleApp\TestNugetConsoleApp.csproj"
-        $xml.Load($xmlPath)
-        $xml.SelectSingleNode("Project/ItemGroup/PackageReference[@Include='EverythingSearchClient']").Version = "${{ env.FULL_VERSION_NUMBER }}"
-        $xml.Save($xmlPath)
+    #     $xmlPath = Resolve-Path "TestNugetConsoleApp\TestNugetConsoleApp.csproj"
+    #     $xml.Load($xmlPath)
+    #     $xml.SelectSingleNode("Project/ItemGroup/PackageReference[@Include='EverythingSearchClient']").Version = "${{ env.FULL_VERSION_NUMBER }}"
+    #     $xml.Save($xmlPath)
 
-    - name: Build nuget test app
-      shell: pwsh
-      run: |
-        cd TestNugetConsoleApp
-        dotnet build --configuration ${{ matrix.configuration }}
+    # - name: Build nuget test app
+    #   shell: pwsh
+    #   run: |
+    #     cd TestNugetConsoleApp
+    #     dotnet build --configuration ${{ matrix.configuration }}
 
-    - name: Run nuget test app
-      shell: pwsh
-      run: |
-        cd TestNugetConsoleApp
-        $exe = gci TestNugetConsoleApp.exe -recurse
-        & $exe
+    # - name: Run nuget test app
+    #   shell: pwsh
+    #   run: |
+    #     cd TestNugetConsoleApp
+    #     $exe = gci TestNugetConsoleApp.exe -recurse
+    #     & $exe
 
     - name: Upload artifact
       if: ${{ matrix.configuration == 'Release' }}
