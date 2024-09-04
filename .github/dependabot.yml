@@ -1,0 +1,33 @@
+# Dependabot with version updates
+# https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+
+version: 2
+updates:
+  # Github Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+
+  # projects nugets
+  - package-ecosystem: "nuget"
+    directory: "/EverythingSearchClient"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "nuget"
+    directory: "/ExampleApp"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "nuget"
+    directory: "/TestNugetConsoleApp"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "nuget"
+    directory: "/TestProject"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
