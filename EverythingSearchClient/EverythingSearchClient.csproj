@@ -1,16 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <!--<TargetFrameworks>net7.0-windows;net6.0-windows</TargetFrameworks>-->
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Title>Everything Search Client</Title>
-    <Version>0.8.0</Version>
+    <Version>0.9.0</Version>
     <Authors>SGrottel</Authors>
     <Description>A .NET client library for Voidtools' Everything search engine, without the native Everything SDK dll.</Description>
-    <Copyright>Copyright 2022-2024, by SGrottel</Copyright>
+    <Copyright>Copyright 2022-2025, by SGrottel</Copyright>
     <PackageProjectUrl>https://go.grottel.net/EverythingSearchClient</PackageProjectUrl>
     <RepositoryUrl>https://github.com/sgrottel/EverythingSearchClient.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
