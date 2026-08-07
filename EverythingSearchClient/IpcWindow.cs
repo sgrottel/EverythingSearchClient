@@ -32,7 +32,16 @@ namespace EverythingSearchClient
 		{
 			get
 			{
-				return HWnd != IntPtr.Zero;
+				if (HWnd == IntPtr.Zero)
+				{
+					return false;
+				}
+				if (!IsWindow(HWnd) || !IsEverythingIpcWindow(HWnd))
+				{
+					HWnd = IntPtr.Zero;
+					return false;
+				}
+				return true;
 			}
 		}
 
@@ -52,8 +61,26 @@ namespace EverythingSearchClient
 			return new Version(ma, mi, re, bu);
 		}
 
+		private static bool IsEverythingIpcWindow(IntPtr hWnd)
+		{
+			StringBuilder className = new StringBuilder(256);
+			int len = GetClassName(hWnd, className, className.Capacity);
+			if (len <= 0)
+			{
+				return false;
+			}
+			return string.Equals(className.ToString(), EverythingIPC.EVERYTHING_IPC_WNDCLASS, StringComparison.Ordinal);
+		}
+
 		[DllImport("user32.dll", SetLastError = true)]
 		private static extern IntPtr FindWindow(string lpClassName, string? lpWindowName);
+
+		[DllImport("user32.dll")]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		private static extern bool IsWindow(IntPtr hWnd);
+
+		[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+		private static extern int GetClassName(IntPtr hWnd, StringBuilder lpClassName, int nMaxCount);
 
 		[DllImport("user32.dll", CharSet = CharSet.Auto)]
 		private static extern uint SendMessage(IntPtr hWnd, uint Msg, uint wParam, uint lParam);
