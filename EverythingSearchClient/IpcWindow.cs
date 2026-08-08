@@ -42,6 +42,14 @@ namespace EverythingSearchClient
 			return b != 0;
 		}
 
+		/// <summary>
+		/// Queues a full rescan of all indexes, to run once the Everything database is ready (Everything 1.5).
+		/// </summary>
+		public void QueueRebuildDatabase()
+		{
+			SendMessage(HWnd, EverythingIPC.EVERYTHING_WM_IPC, EverythingIPC.EVERYTHING_IPC_QUEUE_REBUILD_DB, 0);
+		}
+
 		public Version GetVersion()
 		{
 			int ma = (int)SendMessage(HWnd, EverythingIPC.EVERYTHING_WM_IPC, EverythingIPC.EVERYTHING_IPC_GET_MAJOR_VERSION, 0);

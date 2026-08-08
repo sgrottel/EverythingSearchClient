@@ -37,6 +37,18 @@ namespace EverythingSearchClient.TestProject
 			EnsureFile(sub2sub, "FileA.json", 7, 8, 5);
 			EnsureFile(sub2sub, "FileF.txt", 4, 4, 1);
 
+			// Everything 1.5 flag fixtures.
+			// Deliberately named without "File" and with a unique ".esctest" extension, so they don't
+			// affect the counts asserted by the pre-existing tests above (in particular the ".txt"
+			// whole-word extension check).
+			DirectoryInfo sub3 = EnsureDir(root, "SubDir3");
+			EnsureFile(sub3, "Cafe.esctest", 1, 0, 0); // no diacritics
+			EnsureFile(sub3, "Café.esctest", 1, 0, 0); // with diacritics
+			EnsureFile(sub3, "AlphaBeta.esctest", 1, 0, 0); // "Alpha" is a prefix of this word
+			EnsureFile(sub3, "BetaAlpha.esctest", 1, 0, 0); // "Alpha" is a suffix of this word
+			EnsureFile(sub3, "Foo-Bar.esctest", 1, 0, 0); // punctuation inside the word
+			EnsureFile(sub3, "Foo Bar.esctest", 1, 0, 0); // white-space inside the word
+
 			// We need to wait for EverythingIndex to be built up
 			SearchClient everything = new();
 			Result res = new();
