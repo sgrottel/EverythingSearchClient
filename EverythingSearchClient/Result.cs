@@ -126,6 +126,49 @@ namespace EverythingSearchClient
 			/// </summary>
 			public ItemFileAttributes? FileAttributes { get; protected set; } = null;
 
+			/// <summary>
+			/// Gets the optional date time of the last file access
+			/// </summary>
+			public DateTime? AccessTime { get; protected set; } = null;
+
+			/// <summary>
+			/// Gets the optional run history count (Everything 1.5)
+			/// </summary>
+			public uint? RunCount { get; protected set; } = null;
+
+			/// <summary>
+			/// Gets the optional date time this item was last run (Everything 1.5)
+			/// </summary>
+			public DateTime? DateRun { get; protected set; } = null;
+
+			/// <summary>
+			/// Gets the optional date time this item was recently changed (Everything 1.5)
+			/// </summary>
+			public DateTime? DateRecentlyChanged { get; protected set; } = null;
+
+			/// <summary>
+			/// Gets the optional file list filename, set when the result comes from a loaded file list (.efu) rather than the live index (Everything 1.5)
+			/// </summary>
+			public string? FileListFilename { get; protected set; } = null;
+
+			/// <summary>
+			/// Gets the optional name with search-match highlighting markers, when requested (Everything 1.5).
+			/// In the returned text, `*text*` marks a highlighted substring, and `**` is a literal `*`.
+			/// </summary>
+			public string? HighlightedName { get; protected set; } = null;
+
+			/// <summary>
+			/// Gets the optional path with search-match highlighting markers, when requested (Everything 1.5).
+			/// In the returned text, `*text*` marks a highlighted substring, and `**` is a literal `*`.
+			/// </summary>
+			public string? HighlightedPath { get; protected set; } = null;
+
+			/// <summary>
+			/// Gets the optional full path and name with search-match highlighting markers, when requested (Everything 1.5).
+			/// In the returned text, `*text*` marks a highlighted substring, and `**` is a literal `*`.
+			/// </summary>
+			public string? HighlightedFullPathAndName { get; protected set; } = null;
+
 		}
 
 		/// <summary>

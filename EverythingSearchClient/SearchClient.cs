@@ -2,6 +2,7 @@
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Threading;
+using EverythingSearchClient.Everything3Ipc;
 
 namespace EverythingSearchClient
 {
@@ -80,6 +81,19 @@ namespace EverythingSearchClient
 			return ipcWindow.IsBusy();
 		}
 
+		/// <summary>
+		/// Queues a full rescan of all indexes, to run once the Everything database is ready (Everything 1.5).
+		/// </summary>
+		/// <exception cref="InvalidOperationException">When Everything is not available</exception>
+		public static void QueueRebuildDatabase()
+		{
+			if (!IsEverythingAvailable())
+			{
+				throw new InvalidOperationException("Everything service is not available");
+			}
+			ipcWindow.QueueRebuildDatabase();
+		}
+
 		[Flags]
 		public enum SearchFlags
 		{
@@ -87,7 +101,12 @@ namespace EverythingSearchClient
 			MatchCase = 1,
 			MatchWholeWord = 2, // match whole word
 			MatchPath = 4, // include paths in search
-			RegEx = 8 // enable regex
+			RegEx = 8, // enable regex
+			MatchDiacritics = 16, // match diacritic marks
+			MatchPrefix = 32, // match prefix (start of words) (Everything 1.5)
+			MatchSuffix = 64, // match suffix (end of words) (Everything 1.5)
+			IgnorePunctuation = 128, // ignore punctuation in filenames (Everything 1.5)
+			IgnoreWhitespace = 256 // ignore white-space in filenames (Everything 1.5)
 		}
 
 		/// <summary>
@@ -101,7 +120,14 @@ namespace EverythingSearchClient
 			Size,
 			Extension,
 			DateCreated,
-			DateModified
+			DateModified,
+			TypeName,
+			Attributes,
+			FileListFilename,
+			RunCount,
+			DateRecentlyChanged,
+			DateAccessed,
+			DateRun
 		}
 
 		/// <summary>
@@ -201,6 +227,11 @@ namespace EverythingSearchClient
 		/// </summary>
 		/// <param name="query">The Everything query string</param>
 		/// <param name="timeoutMs">Wait timeout in milliseconds. Is only used when `whenBusy` is one of the `Wait*` options.</param>
+		/// <param name="includeHighlightedText">
+		/// When true, also requests search-match-highlighted variants of Name/Path/FullPathAndName (Everything 1.5).
+		/// This requires the Query2 API; if the query falls back to Query1, the highlighted properties on the
+		/// returned items will simply be left null.
+		/// </param>
 		/// <exception cref="InvalidOperationException">When Everything is not available</exception>
 		public Result Search(
 			string query,
@@ -210,7 +241,8 @@ namespace EverythingSearchClient
 			BehaviorWhenBusy whenBusy = BehaviorWhenBusy.WaitOrError,
 			uint timeoutMs = DefaultTimeoutMs,
 			SortBy sortBy = SortBy.None,
-			SortDirection sortDirection = SortDirection.Ascending)
+			SortDirection sortDirection = SortDirection.Ascending,
+			bool includeHighlightedText = false)
 		{
 			if (!IsEverythingAvailable())
 			{
@@ -219,13 +251,26 @@ namespace EverythingSearchClient
 
 			QueryApi api = UseQueryApi;
 
+			// Applies whenBusy/timeoutMs regardless of which transport ends up serving the search - the
+			// busy state is server-side (the index/DB), not tied to the classic window-message IPC.
+			HandleBusyEverything(whenBusy, timeoutMs);
+
+			if (api == QueryApi.Any)
+			{
+				Result? pipeResult = TrySearchViaPipe(query, flags, maxResults, offset, sortBy, sortDirection, includeHighlightedText);
+				if (pipeResult != null)
+				{
+					return pipeResult;
+				}
+			}
+
 			MessageReceiverWindow myWnd = new();
 
 			bool sent = false;
 			// first, try send via ApiV2
 			if (api == QueryApi.Any || api == QueryApi.Query2only)
 			{
-				if (myWnd.BuildQuery2(query, flags, maxResults, offset, sortBy, sortDirection))
+				if (myWnd.BuildQuery2(query, flags, maxResults, offset, sortBy, sortDirection, includeHighlightedText))
 				{
 					HandleBusyEverything(whenBusy, timeoutMs);
 					if (myWnd.SendQuery(ipcWindow.HWnd))
@@ -308,6 +353,44 @@ namespace EverythingSearchClient
 			}
 
 			return myWnd.Result;
+		}
+
+		/// <summary>
+		/// Attempts the search over Everything's native named-pipe IPC (Everything 1.5+, "Everything3").
+		/// Returns null on any failure (older Everything version without the pipe, IO error, etc.), so the
+		/// caller can transparently fall back to the classic window-message IPC.
+		/// </summary>
+		private Result? TrySearchViaPipe(
+			string query,
+			SearchFlags flags,
+			uint maxResults,
+			uint offset,
+			SortBy sortBy,
+			SortDirection sortDirection,
+			bool includeHighlightedText)
+		{
+			try
+			{
+				using Everything3PipeClient pipe = new();
+				if (!pipe.TryConnect())
+				{
+					return null;
+				}
+
+				byte[] request = Everything3SearchRequestBuilder.Build(query, flags, maxResults, offset, sortBy, sortDirection, includeHighlightedText);
+				(uint responseCode, byte[] responsePayload) = pipe.SendRequest(Everything3Protocol.CommandSearch, request);
+				if (responseCode != Everything3Protocol.ResponseOk)
+				{
+					return null;
+				}
+
+				return Everything3ResultParser.Parse(responsePayload);
+			}
+			catch
+			{
+				// Any failure on the named-pipe path silently falls back to the classic window-message IPC.
+				return null;
+			}
 		}
 
 		private void HandleBusyEverything(BehaviorWhenBusy whenBusy, uint timeoutMs)

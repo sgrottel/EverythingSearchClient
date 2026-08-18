@@ -111,5 +111,63 @@ namespace EverythingSearchClient.TestProject
 			Assert.IsTrue(data.Contains(r, @"SubDir1\fileA.jpg"));
 			Assert.IsTrue(data.Contains(r, @"SubDir2\fileA.html"));
 		}
+
+		// The following tests require Everything 1.5.
+
+		[TestMethod]
+		public void TestSearchFlagsMatchDiacritics()
+		{
+			Result r = everything.Search("Cafe " + data.TestDataRootDirectory, SearchClient.SearchFlags.None);
+			Assert.IsTrue(data.Contains(r, @"SubDir3\Cafe.esctest"));
+			Assert.IsTrue(data.Contains(r, @"SubDir3\Café.esctest"));
+
+			r = everything.Search("Cafe " + data.TestDataRootDirectory, SearchClient.SearchFlags.MatchDiacritics);
+			Assert.IsTrue(data.Contains(r, @"SubDir3\Cafe.esctest"));
+			Assert.IsFalse(data.Contains(r, @"SubDir3\Café.esctest"));
+		}
+
+		[TestMethod]
+		public void TestSearchFlagsMatchPrefix()
+		{
+			Result r = everything.Search("Alpha " + data.TestDataRootDirectory, SearchClient.SearchFlags.None);
+			Assert.IsTrue(data.Contains(r, @"SubDir3\AlphaBeta.esctest"));
+			Assert.IsTrue(data.Contains(r, @"SubDir3\BetaAlpha.esctest"));
+
+			r = everything.Search("Alpha " + data.TestDataRootDirectory, SearchClient.SearchFlags.MatchPrefix);
+			Assert.IsTrue(data.Contains(r, @"SubDir3\AlphaBeta.esctest"));
+			Assert.IsFalse(data.Contains(r, @"SubDir3\BetaAlpha.esctest"));
+		}
+
+		[TestMethod]
+		public void TestSearchFlagsMatchSuffix()
+		{
+			Result r = everything.Search("Alpha " + data.TestDataRootDirectory, SearchClient.SearchFlags.None);
+			Assert.IsTrue(data.Contains(r, @"SubDir3\AlphaBeta.esctest"));
+			Assert.IsTrue(data.Contains(r, @"SubDir3\BetaAlpha.esctest"));
+
+			r = everything.Search("Alpha " + data.TestDataRootDirectory, SearchClient.SearchFlags.MatchSuffix);
+			Assert.IsFalse(data.Contains(r, @"SubDir3\AlphaBeta.esctest"));
+			Assert.IsTrue(data.Contains(r, @"SubDir3\BetaAlpha.esctest"));
+		}
+
+		[TestMethod]
+		public void TestSearchFlagsIgnorePunctuation()
+		{
+			Result r = everything.Search("FooBar " + data.TestDataRootDirectory, SearchClient.SearchFlags.None);
+			Assert.IsFalse(data.Contains(r, @"SubDir3\Foo-Bar.esctest"));
+
+			r = everything.Search("FooBar " + data.TestDataRootDirectory, SearchClient.SearchFlags.IgnorePunctuation);
+			Assert.IsTrue(data.Contains(r, @"SubDir3\Foo-Bar.esctest"));
+		}
+
+		[TestMethod]
+		public void TestSearchFlagsIgnoreWhitespace()
+		{
+			Result r = everything.Search("FooBar " + data.TestDataRootDirectory, SearchClient.SearchFlags.None);
+			Assert.IsFalse(data.Contains(r, @"SubDir3\Foo Bar.esctest"));
+
+			r = everything.Search("FooBar " + data.TestDataRootDirectory, SearchClient.SearchFlags.IgnoreWhitespace);
+			Assert.IsTrue(data.Contains(r, @"SubDir3\Foo Bar.esctest"));
+		}
 	}
 }
