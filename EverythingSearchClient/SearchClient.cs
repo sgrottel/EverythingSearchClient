@@ -2,6 +2,7 @@
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Threading;
+using EverythingSearchClient.Everything3Ipc;
 
 namespace EverythingSearchClient
 {
@@ -250,6 +251,19 @@ namespace EverythingSearchClient
 
 			QueryApi api = UseQueryApi;
 
+			// Applies whenBusy/timeoutMs regardless of which transport ends up serving the search - the
+			// busy state is server-side (the index/DB), not tied to the classic window-message IPC.
+			HandleBusyEverything(whenBusy, timeoutMs);
+
+			if (api == QueryApi.Any)
+			{
+				Result? pipeResult = TrySearchViaPipe(query, flags, maxResults, offset, sortBy, sortDirection, includeHighlightedText);
+				if (pipeResult != null)
+				{
+					return pipeResult;
+				}
+			}
+
 			MessageReceiverWindow myWnd = new();
 
 			bool sent = false;
@@ -339,6 +353,44 @@ namespace EverythingSearchClient
 			}
 
 			return myWnd.Result;
+		}
+
+		/// <summary>
+		/// Attempts the search over Everything's native named-pipe IPC (Everything 1.5+, "Everything3").
+		/// Returns null on any failure (older Everything version without the pipe, IO error, etc.), so the
+		/// caller can transparently fall back to the classic window-message IPC.
+		/// </summary>
+		private Result? TrySearchViaPipe(
+			string query,
+			SearchFlags flags,
+			uint maxResults,
+			uint offset,
+			SortBy sortBy,
+			SortDirection sortDirection,
+			bool includeHighlightedText)
+		{
+			try
+			{
+				using Everything3PipeClient pipe = new();
+				if (!pipe.TryConnect())
+				{
+					return null;
+				}
+
+				byte[] request = Everything3SearchRequestBuilder.Build(query, flags, maxResults, offset, sortBy, sortDirection, includeHighlightedText);
+				(uint responseCode, byte[] responsePayload) = pipe.SendRequest(Everything3Protocol.CommandSearch, request);
+				if (responseCode != Everything3Protocol.ResponseOk)
+				{
+					return null;
+				}
+
+				return Everything3ResultParser.Parse(responsePayload);
+			}
+			catch
+			{
+				// Any failure on the named-pipe path silently falls back to the classic window-message IPC.
+				return null;
+			}
 		}
 
 		private void HandleBusyEverything(BehaviorWhenBusy whenBusy, uint timeoutMs)

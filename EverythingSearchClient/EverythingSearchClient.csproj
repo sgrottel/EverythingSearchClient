@@ -31,4 +31,9 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Allows TestProject to unit-test the Everything3 IPC wire-format helpers (e.g. VLQ encoding) directly. -->
+    <InternalsVisibleTo Include="TestProject" />
+  </ItemGroup>
+
 </Project>
