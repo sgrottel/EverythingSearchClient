@@ -18,6 +18,9 @@
     <PackageReadmeFile>README_nuget.md</PackageReadmeFile>
     <PackageIcon>MagnifyingGlass_x128.png</PackageIcon>
     <PackageTags>Voidtools;Everything;Search</PackageTags>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
   </PropertyGroup>
 
   <ItemGroup>
@@ -29,6 +32,10 @@
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.400" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>
