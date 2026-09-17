@@ -64,6 +64,24 @@ class Result
 		ItemFlags Flags;
 		string Name;
 		string Path;
+
+		// optional, populated when using the Query2 API (see `QueryApi` below)
+		ulong? Size;
+		DateTime? CreationTime;
+		DateTime? LastWriteTime;
+		DateTime? AccessTime;
+		ItemFileAttributes? FileAttributes;
+
+		// optional, populated when using the Query2 API against Everything 1.5+
+		uint? RunCount;
+		DateTime? DateRun;
+		DateTime? DateRecentlyChanged;
+		string? FileListFilename;
+
+		// optional, populated when `includeHighlightedText` is set against Everything 1.5+
+		string? HighlightedName;
+		string? HighlightedPath;
+		string? HighlightedFullPathAndName;
 	}
 
 	UInt32 TotalItems;
@@ -82,7 +100,12 @@ Search flags allow to enable some optional features:
 	MatchCase,
 	MatchWholeWord, // match whole word
 	MatchPath, // include paths in search
-	RegEx // enable regex
+	RegEx, // enable regex
+	MatchDiacritics, // match diacritic marks
+	MatchPrefix, // match prefix (start of words) (Everything 1.5)
+	MatchSuffix, // match suffix (end of words) (Everything 1.5)
+	IgnorePunctuation, // ignore punctuation in filenames (Everything 1.5)
+	IgnoreWhitespace // ignore white-space in filenames (Everything 1.5)
 }
 ```
 
@@ -91,6 +114,24 @@ For example, you can use a more precise RegEx to find all `.git` directories (an
 Result res = everything.Search("^\\.git$", SearchClient.SearchFlags.RegEx);
 ```
 Consult the [Everything documenntation](https://www.voidtools.com/support/everything/sdk/) for more info.
+
+### Sort Results
+Results can be sorted by one of the `SortBy` values (`None`, `Name`, `Path`, `Size`, `Extension`, `DateCreated`, `DateModified`, `TypeName`, `Attributes`, `FileListFilename`, `RunCount`, `DateRecentlyChanged`, `DateAccessed`, `DateRun`), combined with a `SortDirection` (`Ascending`/`Decending`):
+```csharp
+Result res = everything.Search("draft", sortBy: SearchClient.SortBy.DateModified, sortDirection: SearchClient.SortDirection.Decending);
+```
+The last seven `SortBy` values (`TypeName` through `DateRun`) require Everything 1.5.
+
+### Highlighted Results
+When `includeHighlightedText` is set, Everything (1.5+) also returns `HighlightedName`, `HighlightedPath`, and `HighlightedFullPathAndName` on each result item, with `*text*` marking the substrings that matched your search (and `**` representing a literal `*`):
+```csharp
+Result res = everything.Search("draft", includeHighlightedText: true);
+foreach (Result.Item item in res.Items)
+{
+	Console.WriteLine(item.HighlightedName);
+}
+```
+If the search falls back to the older Query1 API (see `QueryApi` below), the highlighted properties are simply left `null`.
 
 
 ### Limit Results
@@ -162,10 +203,15 @@ class SearchClient
 	static Version GetEverythingVersion();
 
 	static bool IsEverythingBusy();
+
+	// requires Everything 1.5
+	static void QueueRebuildDatabase();
 	// ... 
 }
 ```
 Your application should first check if Everything is generally `Available`, and should check if it's `Busy` before trying to submit a search query (to avoid unexpected wait times).
+
+`QueueRebuildDatabase()` queues a full rescan of all indexes, to run once the Everything database is ready.
 
 In addition, you can use:
 ```csharp
@@ -206,6 +252,14 @@ If you want to get your application into this list, I am happy to accept pull re
 * [FolderSummary in Tiny Tools Collection (https://github.com/sgrottel/tiny-tools-collection)](https://github.com/sgrottel/tiny-tools-collection)
   > Simple C# app to summarize the content of a folder (recursively) into a Json file.
 * 🚧 TODO: List my apps using the lib in alphabetic order
+
+## Everything 1.5
+Everything 1.5 (see the [voidtools forum announcement](https://www.voidtools.com/forum/viewtopic.php?t=15853)) introduces two separate things:
+
+1. A brand-new named-pipe IPC with an accompanying "SDK v3" C API (`Everything3_*` functions). It's additive and powers advanced features (the property system, run-history, folder-size, live result-list monitoring, PCRE regex, viewport paging). voidtools publishes the full source of this SDK wrapper, including the named-pipe wire protocol itself, as [`voidtools/everything_sdk3`](https://github.com/voidtools/everything_sdk3) (MIT licensed) — it is not limited to a compiled DLL.
+2. Incremental additions to the classic message-window IPC that this library speaks (new search flags, new sortable/queryable fields, a queue-rebuild command). These are fully documented and are what this library implemented first.
+
+This library now speaks (1) directly for searches, re-implemented in managed code from the published `Everything3.c` source — no native `Everything3.dll` dependency is added, staying true to this library's goal of one managed AnyCPU DLL. `SearchClient.Search` prefers the named-pipe IPC automatically when it's available and transparently falls back to the classic message-window IPC from (2) otherwise — whether because Everything is older than 1.5, or the pipe attempt fails for any reason. Restricting `UseQueryApi` to `Query1only`/`Query2only` forces the classic IPC explicitly. voidtools has confirmed that previous IPC versions remain compatible with Everything 1.5, so this library continues to work against 1.3, 1.4, and 1.5 installs unchanged, gaining the new 1.5 fields where the installed version supports them.
 
 ## Alternatives
 ### Everything SDK

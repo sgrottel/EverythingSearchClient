@@ -97,6 +97,36 @@ namespace EverythingSearchClient
 		internal const uint EVERYTHING_IPC_REGEX = 0x00000008;
 
 		/// <summary>
+		/// match diacritic marks
+		/// </summary>
+		internal const uint EVERYTHING_IPC_MATCHDIACRITICS = 0x00000010;
+
+		/// <summary>
+		/// match prefix (start of words) (Everything 1.5)
+		/// </summary>
+		internal const uint EVERYTHING_IPC_MATCHPREFIX = 0x00000020;
+
+		/// <summary>
+		/// match suffix (end of words) (Everything 1.5)
+		/// </summary>
+		internal const uint EVERYTHING_IPC_MATCHSUFFIX = 0x00000040;
+
+		/// <summary>
+		/// ignore punctuation in filenames (Everything 1.5)
+		/// </summary>
+		internal const uint EVERYTHING_IPC_IGNOREPUNCTUATION = 0x00000080;
+
+		/// <summary>
+		/// ignore white-space in filenames (Everything 1.5)
+		/// </summary>
+		internal const uint EVERYTHING_IPC_IGNOREWHITESPACE = 0x00000100;
+
+		/// <summary>
+		/// forces all indexes to be rescanned when the db is ready (Everything 1.5)
+		/// </summary>
+		internal const uint EVERYTHING_IPC_QUEUE_REBUILD_DB = 412;
+
+		/// <summary>
 		/// the WM_COPYDATA message for a query.
 		/// Use the unicode UTF16 variant
 		/// </summary>
@@ -189,7 +219,7 @@ namespace EverythingSearchClient
 		internal const uint EVERYTHING_IPC_QUERY2_REQUEST_DATE_MODIFIED = 0x00000040;
 
 		/// <summary>
-		/// Request file attributes
+		/// Request file last accessed date
 		/// </summary>
 		internal const uint EVERYTHING_IPC_QUERY2_REQUEST_DATE_ACCESSED = 0x00000080;
 
@@ -197,6 +227,41 @@ namespace EverythingSearchClient
 		/// Request file attributes
 		/// </summary>
 		internal const uint EVERYTHING_IPC_QUERY2_REQUEST_ATTRIBUTES = 0x00000100;
+
+		/// <summary>
+		/// Request file list filename (Everything 1.5)
+		/// </summary>
+		internal const uint EVERYTHING_IPC_QUERY2_REQUEST_FILE_LIST_FILE_NAME = 0x00000200;
+
+		/// <summary>
+		/// Request run history count (Everything 1.5)
+		/// </summary>
+		internal const uint EVERYTHING_IPC_QUERY2_REQUEST_RUN_COUNT = 0x00000400;
+
+		/// <summary>
+		/// Request date of last run (Everything 1.5)
+		/// </summary>
+		internal const uint EVERYTHING_IPC_QUERY2_REQUEST_DATE_RUN = 0x00000800;
+
+		/// <summary>
+		/// Request date recently changed (Everything 1.5)
+		/// </summary>
+		internal const uint EVERYTHING_IPC_QUERY2_REQUEST_DATE_RECENTLY_CHANGED = 0x00001000;
+
+		/// <summary>
+		/// Request name string with search-match highlighting markers (Everything 1.5)
+		/// </summary>
+		internal const uint EVERYTHING_IPC_QUERY2_REQUEST_HIGHLIGHTED_NAME = 0x00002000;
+
+		/// <summary>
+		/// Request path string with search-match highlighting markers (Everything 1.5)
+		/// </summary>
+		internal const uint EVERYTHING_IPC_QUERY2_REQUEST_HIGHLIGHTED_PATH = 0x00004000;
+
+		/// <summary>
+		/// Request full path-and-name string with search-match highlighting markers (Everything 1.5)
+		/// </summary>
+		internal const uint EVERYTHING_IPC_QUERY2_REQUEST_HIGHLIGHTED_FULL_PATH_AND_NAME = 0x00008000;
 
 		/// <summary>
 		/// Sort results by file name ascending
@@ -239,6 +304,16 @@ namespace EverythingSearchClient
 		internal const uint EVERYTHING_IPC_SORT_EXTENSION_DESCENDING = 8;
 
 		/// <summary>
+		/// Sort results by file type name ascending
+		/// </summary>
+		internal const uint EVERYTHING_IPC_SORT_TYPE_NAME_ASCENDING = 9;
+
+		/// <summary>
+		/// Sort results by file type name decending
+		/// </summary>
+		internal const uint EVERYTHING_IPC_SORT_TYPE_NAME_DESCENDING = 10;
+
+		/// <summary>
 		/// Sort results by creation date ascending
 		/// </summary>
 		internal const uint EVERYTHING_IPC_SORT_DATE_CREATED_ASCENDING = 11;
@@ -257,6 +332,66 @@ namespace EverythingSearchClient
 		/// Sort results by date of last modification decending
 		/// </summary>
 		internal const uint EVERYTHING_IPC_SORT_DATE_MODIFIED_DESCENDING = 14;
+
+		/// <summary>
+		/// Sort results by file attributes ascending (Everything 1.5)
+		/// </summary>
+		internal const uint EVERYTHING_IPC_SORT_ATTRIBUTES_ASCENDING = 15;
+
+		/// <summary>
+		/// Sort results by file attributes decending (Everything 1.5)
+		/// </summary>
+		internal const uint EVERYTHING_IPC_SORT_ATTRIBUTES_DESCENDING = 16;
+
+		/// <summary>
+		/// Sort results by file list filename ascending (Everything 1.5)
+		/// </summary>
+		internal const uint EVERYTHING_IPC_SORT_FILE_LIST_FILENAME_ASCENDING = 17;
+
+		/// <summary>
+		/// Sort results by file list filename decending (Everything 1.5)
+		/// </summary>
+		internal const uint EVERYTHING_IPC_SORT_FILE_LIST_FILENAME_DESCENDING = 18;
+
+		/// <summary>
+		/// Sort results by run history count ascending (Everything 1.5)
+		/// </summary>
+		internal const uint EVERYTHING_IPC_SORT_RUN_COUNT_ASCENDING = 19;
+
+		/// <summary>
+		/// Sort results by run history count decending (Everything 1.5)
+		/// </summary>
+		internal const uint EVERYTHING_IPC_SORT_RUN_COUNT_DESCENDING = 20;
+
+		/// <summary>
+		/// Sort results by date recently changed ascending (Everything 1.5)
+		/// </summary>
+		internal const uint EVERYTHING_IPC_SORT_DATE_RECENTLY_CHANGED_ASCENDING = 21;
+
+		/// <summary>
+		/// Sort results by date recently changed decending (Everything 1.5)
+		/// </summary>
+		internal const uint EVERYTHING_IPC_SORT_DATE_RECENTLY_CHANGED_DESCENDING = 22;
+
+		/// <summary>
+		/// Sort results by date accessed ascending (Everything 1.5)
+		/// </summary>
+		internal const uint EVERYTHING_IPC_SORT_DATE_ACCESSED_ASCENDING = 23;
+
+		/// <summary>
+		/// Sort results by date accessed decending (Everything 1.5)
+		/// </summary>
+		internal const uint EVERYTHING_IPC_SORT_DATE_ACCESSED_DESCENDING = 24;
+
+		/// <summary>
+		/// Sort results by date of last run ascending (Everything 1.5)
+		/// </summary>
+		internal const uint EVERYTHING_IPC_SORT_DATE_RUN_ASCENDING = 25;
+
+		/// <summary>
+		/// Sort results by date of last run decending (Everything 1.5)
+		/// </summary>
+		internal const uint EVERYTHING_IPC_SORT_DATE_RUN_DESCENDING = 26;
 
 	}
 
