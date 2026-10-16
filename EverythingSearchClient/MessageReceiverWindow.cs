@@ -244,7 +244,8 @@ namespace EverythingSearchClient
 			uint maxResults,
 			uint offset,
 			SearchClient.SortBy sortBy,
-			SearchClient.SortDirection sortDirection)
+			SearchClient.SortDirection sortDirection,
+			bool includeHighlightedText = false)
 		{
 			var f = requests.Find((x) => x.Item2 == this);
 			if (f == null)
@@ -264,6 +265,11 @@ namespace EverythingSearchClient
 			if (flags.HasFlag(SearchClient.SearchFlags.MatchWholeWord)) q2.search_flags |= EverythingIPC.EVERYTHING_IPC_MATCHWHOLEWORD;
 			if (flags.HasFlag(SearchClient.SearchFlags.MatchPath)) q2.search_flags |= EverythingIPC.EVERYTHING_IPC_MATCHPATH;
 			if (flags.HasFlag(SearchClient.SearchFlags.RegEx)) q2.search_flags |= EverythingIPC.EVERYTHING_IPC_REGEX;
+			if (flags.HasFlag(SearchClient.SearchFlags.MatchDiacritics)) q2.search_flags |= EverythingIPC.EVERYTHING_IPC_MATCHDIACRITICS;
+			if (flags.HasFlag(SearchClient.SearchFlags.MatchPrefix)) q2.search_flags |= EverythingIPC.EVERYTHING_IPC_MATCHPREFIX;
+			if (flags.HasFlag(SearchClient.SearchFlags.MatchSuffix)) q2.search_flags |= EverythingIPC.EVERYTHING_IPC_MATCHSUFFIX;
+			if (flags.HasFlag(SearchClient.SearchFlags.IgnorePunctuation)) q2.search_flags |= EverythingIPC.EVERYTHING_IPC_IGNOREPUNCTUATION;
+			if (flags.HasFlag(SearchClient.SearchFlags.IgnoreWhitespace)) q2.search_flags |= EverythingIPC.EVERYTHING_IPC_IGNOREWHITESPACE;
 			q2.max_results = maxResults;
 			q2.offset = offset;
 			q2.request_flags = EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_NAME
@@ -271,7 +277,18 @@ namespace EverythingSearchClient
 				| EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_SIZE
 				| EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_DATE_CREATED
 				| EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_DATE_MODIFIED
-				| EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_ATTRIBUTES;
+				| EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_DATE_ACCESSED
+				| EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_ATTRIBUTES
+				| EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_FILE_LIST_FILE_NAME
+				| EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_RUN_COUNT
+				| EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_DATE_RUN
+				| EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_DATE_RECENTLY_CHANGED;
+			if (includeHighlightedText)
+			{
+				q2.request_flags |= EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_HIGHLIGHTED_NAME
+					| EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_HIGHLIGHTED_PATH
+					| EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_HIGHLIGHTED_FULL_PATH_AND_NAME;
+			}
 			if (sortBy != SearchClient.SortBy.None)
 			{
 				switch (sortBy)
@@ -305,6 +322,41 @@ namespace EverythingSearchClient
 						q2.sort_type = (sortDirection == SearchClient.SortDirection.Ascending)
 							? EverythingIPC.EVERYTHING_IPC_SORT_DATE_MODIFIED_ASCENDING
 							: EverythingIPC.EVERYTHING_IPC_SORT_DATE_MODIFIED_DESCENDING;
+						break;
+					case SearchClient.SortBy.TypeName:
+						q2.sort_type = (sortDirection == SearchClient.SortDirection.Ascending)
+							? EverythingIPC.EVERYTHING_IPC_SORT_TYPE_NAME_ASCENDING
+							: EverythingIPC.EVERYTHING_IPC_SORT_TYPE_NAME_DESCENDING;
+						break;
+					case SearchClient.SortBy.Attributes:
+						q2.sort_type = (sortDirection == SearchClient.SortDirection.Ascending)
+							? EverythingIPC.EVERYTHING_IPC_SORT_ATTRIBUTES_ASCENDING
+							: EverythingIPC.EVERYTHING_IPC_SORT_ATTRIBUTES_DESCENDING;
+						break;
+					case SearchClient.SortBy.FileListFilename:
+						q2.sort_type = (sortDirection == SearchClient.SortDirection.Ascending)
+							? EverythingIPC.EVERYTHING_IPC_SORT_FILE_LIST_FILENAME_ASCENDING
+							: EverythingIPC.EVERYTHING_IPC_SORT_FILE_LIST_FILENAME_DESCENDING;
+						break;
+					case SearchClient.SortBy.RunCount:
+						q2.sort_type = (sortDirection == SearchClient.SortDirection.Ascending)
+							? EverythingIPC.EVERYTHING_IPC_SORT_RUN_COUNT_ASCENDING
+							: EverythingIPC.EVERYTHING_IPC_SORT_RUN_COUNT_DESCENDING;
+						break;
+					case SearchClient.SortBy.DateRecentlyChanged:
+						q2.sort_type = (sortDirection == SearchClient.SortDirection.Ascending)
+							? EverythingIPC.EVERYTHING_IPC_SORT_DATE_RECENTLY_CHANGED_ASCENDING
+							: EverythingIPC.EVERYTHING_IPC_SORT_DATE_RECENTLY_CHANGED_DESCENDING;
+						break;
+					case SearchClient.SortBy.DateAccessed:
+						q2.sort_type = (sortDirection == SearchClient.SortDirection.Ascending)
+							? EverythingIPC.EVERYTHING_IPC_SORT_DATE_ACCESSED_ASCENDING
+							: EverythingIPC.EVERYTHING_IPC_SORT_DATE_ACCESSED_DESCENDING;
+						break;
+					case SearchClient.SortBy.DateRun:
+						q2.sort_type = (sortDirection == SearchClient.SortDirection.Ascending)
+							? EverythingIPC.EVERYTHING_IPC_SORT_DATE_RUN_ASCENDING
+							: EverythingIPC.EVERYTHING_IPC_SORT_DATE_RUN_DESCENDING;
 						break;
 				}
 			}
@@ -485,7 +537,15 @@ namespace EverythingSearchClient
 				ulong? fileSize,
 				DateTime? createTime,
 				DateTime? lastWriteTime,
-				uint? attributes)
+				uint? attributes,
+				DateTime? accessTime = null,
+				uint? runCount = null,
+				DateTime? dateRun = null,
+				DateTime? dateRecentlyChanged = null,
+				string? fileListFilename = null,
+				string? highlightedName = null,
+				string? highlightedPath = null,
+				string? highlightedFullPathAndName = null)
 			{
 				Flags = flags;
 				Name = filename;
@@ -497,6 +557,14 @@ namespace EverythingSearchClient
 				{
 					FileAttributes = (Result.ItemFileAttributes)attributes.Value;
 				}
+				AccessTime = accessTime;
+				RunCount = runCount;
+				DateRun = dateRun;
+				DateRecentlyChanged = dateRecentlyChanged;
+				FileListFilename = fileListFilename;
+				HighlightedName = highlightedName;
+				HighlightedPath = highlightedPath;
+				HighlightedFullPathAndName = highlightedFullPathAndName;
 			}
 		}
 
@@ -552,7 +620,15 @@ namespace EverythingSearchClient
 				ulong? fileSize = null;
 				DateTime? createDate = null;
 				DateTime? modDate = null;
+				DateTime? accessDate = null;
 				uint? fileAttributes = null;
+				string? fileListFilename = null;
+				uint? runCount = null;
+				DateTime? dateRun = null;
+				DateTime? dateRecentlyChanged = null;
+				string? highlightedName = null;
+				string? highlightedPath = null;
+				string? highlightedFullPathAndName = null;
 
 				// data found at data_offset
 				// if EVERYTHING_IPC_QUERY2_REQUEST_NAME was set in request_flags, DWORD name_length in characters (excluding the null terminator); followed by null terminated text.
@@ -628,18 +704,106 @@ namespace EverythingSearchClient
 				// if EVERYTHING_IPC_QUERY2_REQUEST_DATE_ACCESSED was set in request_flags, FILETIME date;
 				if ((requestFlags & EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_DATE_ACCESSED) == EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_DATE_ACCESSED)
 				{
+					long timecode = Marshal.ReadInt64(mem + offset);
+					if (timecode > 0)
+					{
+						try
+						{
+							accessDate = DateTime.FromFileTime(timecode);
+						}
+						catch
+						{
+							accessDate = null;
+						}
+					}
 					offset += 8;
 				}
 				// if EVERYTHING_IPC_QUERY2_REQUEST_ATTRIBUTES was set in request_flags, DWORD attributes;
 				if ((requestFlags & EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_ATTRIBUTES) == EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_ATTRIBUTES)
 				{
 					fileAttributes = (uint)Marshal.ReadInt32(mem + offset);
-					// offset += 4;
+					offset += 4;
+				}
+				// if EVERYTHING_IPC_QUERY2_REQUEST_FILE_LIST_FILE_NAME was set in request_flags, DWORD name_length in characters (excluding the null terminator); followed by null terminated text; (Everything 1.5)
+				if ((requestFlags & EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_FILE_LIST_FILE_NAME) == EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_FILE_LIST_FILE_NAME)
+				{
+					int len = Marshal.ReadInt32(mem + offset);
+					offset += 4;
+					fileListFilename = Marshal.PtrToStringUni(mem + offset, len);
+					if (fileListFilename.Length == 0) fileListFilename = null; // empty when the result is not from a loaded file list
+					offset += (len + 1) * 2;
+				}
+				// if EVERYTHING_IPC_QUERY2_REQUEST_RUN_COUNT was set in request_flags, DWORD run_count; (Everything 1.5)
+				if ((requestFlags & EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_RUN_COUNT) == EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_RUN_COUNT)
+				{
+					runCount = (uint)Marshal.ReadInt32(mem + offset);
+					offset += 4;
+				}
+				// if EVERYTHING_IPC_QUERY2_REQUEST_DATE_RUN was set in request_flags, FILETIME date; (Everything 1.5)
+				if ((requestFlags & EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_DATE_RUN) == EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_DATE_RUN)
+				{
+					long timecode = Marshal.ReadInt64(mem + offset);
+					if (timecode > 0)
+					{
+						try
+						{
+							dateRun = DateTime.FromFileTime(timecode);
+						}
+						catch
+						{
+							dateRun = null;
+						}
+					}
+					offset += 8;
+				}
+				// if EVERYTHING_IPC_QUERY2_REQUEST_DATE_RECENTLY_CHANGED was set in request_flags, FILETIME date; (Everything 1.5)
+				if ((requestFlags & EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_DATE_RECENTLY_CHANGED) == EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_DATE_RECENTLY_CHANGED)
+				{
+					long timecode = Marshal.ReadInt64(mem + offset);
+					if (timecode > 0)
+					{
+						try
+						{
+							dateRecentlyChanged = DateTime.FromFileTime(timecode);
+						}
+						catch
+						{
+							dateRecentlyChanged = null;
+						}
+					}
+					offset += 8;
+				}
+				// if EVERYTHING_IPC_QUERY2_REQUEST_HIGHLIGHTED_NAME was set in request_flags, DWORD name_length in characters (excluding the null terminator); followed by null terminated text; ** = *, *text* = highlighted text (Everything 1.5)
+				if ((requestFlags & EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_HIGHLIGHTED_NAME) == EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_HIGHLIGHTED_NAME)
+				{
+					int len = Marshal.ReadInt32(mem + offset);
+					offset += 4;
+					highlightedName = Marshal.PtrToStringUni(mem + offset, len);
+					offset += (len + 1) * 2;
+				}
+				// if EVERYTHING_IPC_QUERY2_REQUEST_HIGHLIGHTED_PATH was set in request_flags, DWORD name_length in characters (excluding the null terminator); followed by null terminated text; ** = *, *text* = highlighted text (Everything 1.5)
+				if ((requestFlags & EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_HIGHLIGHTED_PATH) == EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_HIGHLIGHTED_PATH)
+				{
+					int len = Marshal.ReadInt32(mem + offset);
+					offset += 4;
+					highlightedPath = Marshal.PtrToStringUni(mem + offset, len);
+					offset += (len + 1) * 2;
+				}
+				// if EVERYTHING_IPC_QUERY2_REQUEST_HIGHLIGHTED_FULL_PATH_AND_NAME was set in request_flags, DWORD name_length in characters (excluding the null terminator); followed by null terminated text; ** = *, *text* = highlighted text (Everything 1.5)
+				if ((requestFlags & EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_HIGHLIGHTED_FULL_PATH_AND_NAME) == EverythingIPC.EVERYTHING_IPC_QUERY2_REQUEST_HIGHLIGHTED_FULL_PATH_AND_NAME)
+				{
+					int len = Marshal.ReadInt32(mem + offset);
+					offset += 4;
+					highlightedFullPathAndName = Marshal.PtrToStringUni(mem + offset, len);
+					// offset += (len + 1) * 2;
 				}
 
 				if (filename != null && path != null)
 				{
-					items.Add(new ResultItemImplementation(flags, filename, path, fileSize, createDate, modDate, fileAttributes));
+					items.Add(new ResultItemImplementation(
+						flags, filename, path, fileSize, createDate, modDate, fileAttributes,
+						accessDate, runCount, dateRun, dateRecentlyChanged, fileListFilename,
+						highlightedName, highlightedPath, highlightedFullPathAndName));
 				}
 			}
 

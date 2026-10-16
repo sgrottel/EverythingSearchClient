@@ -109,12 +109,12 @@ namespace EverythingSearchClient.TestProject
 			WaitUntilBusy();
 			Result r2 = everything2.Search("File " + data.TestDataRootDirectory, SearchClient.BehaviorWhenBusy.WaitOrError, longTimeout);
 
+			t.Join();
+
 			Assert.IsTrue(search1Complete);
 			Assert.IsFalse(search1Failed);
 
 			Assert.AreEqual<uint>(9, r2.TotalItems);
-
-			t.Join();
 		}
 
 		[TestMethod]
@@ -188,12 +188,12 @@ namespace EverythingSearchClient.TestProject
 			WaitUntilBusy();
 			Result r2 = everything2.Search("File " + data.TestDataRootDirectory, SearchClient.BehaviorWhenBusy.WaitOrContinue, longTimeout);
 
+			t.Join();
+
 			Assert.IsTrue(search1Complete);
 			Assert.IsFalse(search1Failed);
 
 			Assert.AreEqual<uint>(9, r2.TotalItems);
-
-			t.Join();
 		}
 
 		[TestMethod]
