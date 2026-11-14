@@ -194,5 +194,84 @@ namespace EverythingSearchClient.TestProject
 			Assert.AreEqual<uint>(9, r.TotalItems);
 			AssertResults8Desc(filesByModifyDate, r);
 		}
+
+		// The following SortBy values require Everything 1.5.
+		// Unlike the sorts above, their exact order depends on values (file type description, live
+		// usage history, NTFS access-time tracking) this test fixture cannot pin down deterministically.
+		// So we only assert: the query still executes, returns the full fixture, and ascending is the
+		// exact reverse of descending (which would fail if the new sort_type wiring were broken).
+		private void AssertAscIsReverseOfDesc(SearchClient.SortBy sortBy)
+		{
+			Result asc = everything.Search(
+				"File " + data.TestDataRootDirectory,
+				sortBy: sortBy,
+				sortDirection: SearchClient.SortDirection.Ascending);
+			Result desc = everything.Search(
+				"File " + data.TestDataRootDirectory,
+				sortBy: sortBy,
+				sortDirection: SearchClient.SortDirection.Decending);
+
+			Assert.AreEqual<uint>(9, asc.TotalItems);
+			Assert.AreEqual<uint>(9, desc.TotalItems);
+			Assert.AreEqual(asc.NumItems, desc.NumItems);
+			for (int i = 0; i < asc.NumItems; ++i)
+			{
+				Assert.AreEqual(asc.Items[i].Name, desc.Items[(int)desc.NumItems - 1 - i].Name);
+				Assert.AreEqual(asc.Items[i].Path, desc.Items[(int)desc.NumItems - 1 - i].Path);
+			}
+		}
+
+		[TestMethod]
+		public void TestSearchSortedTypeName()
+		{
+			AssertAscIsReverseOfDesc(SearchClient.SortBy.TypeName);
+		}
+
+		[TestMethod]
+		public void TestSearchSortedAttributes()
+		{
+			AssertAscIsReverseOfDesc(SearchClient.SortBy.Attributes);
+		}
+
+		[TestMethod]
+		public void TestSearchSortedRunCount()
+		{
+			AssertAscIsReverseOfDesc(SearchClient.SortBy.RunCount);
+		}
+
+		[TestMethod]
+		public void TestSearchSortedDateRecentlyChanged()
+		{
+			AssertAscIsReverseOfDesc(SearchClient.SortBy.DateRecentlyChanged);
+		}
+
+		[TestMethod]
+		public void TestSearchSortedDateAccessed()
+		{
+			AssertAscIsReverseOfDesc(SearchClient.SortBy.DateAccessed);
+		}
+
+		[TestMethod]
+		public void TestSearchSortedDateRun()
+		{
+			AssertAscIsReverseOfDesc(SearchClient.SortBy.DateRun);
+		}
+
+		[TestMethod]
+		public void TestSearchSortedFileListFilename()
+		{
+			// All fixture items come from the live index, not a loaded file list, so FileListFilename
+			// is null for every item; ties make an asc-is-reverse-of-desc check unreliable here, so we
+			// only assert the query executes and returns the full fixture without error.
+			Result r = everything.Search(
+				"File " + data.TestDataRootDirectory,
+				sortBy: SearchClient.SortBy.FileListFilename,
+				sortDirection: SearchClient.SortDirection.Ascending);
+			Assert.AreEqual<uint>(9, r.TotalItems);
+			foreach (Result.Item item in r.Items)
+			{
+				Assert.IsNull(item.FileListFilename);
+			}
+		}
 	}
 }

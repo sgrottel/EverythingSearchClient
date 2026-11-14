@@ -48,6 +48,34 @@ namespace EverythingSearchClient.TestProject
 				Assert.IsTrue(attr.Value.HasFlag(Result.ItemFileAttributes.Hidden));
 				Assert.IsTrue(attr.Value.HasFlag(Result.ItemFileAttributes.Archive));
 			}
+
+			// Everything 1.5 fields.
+			// FileListFilename: this search runs against the live index, not a loaded file list, so it's null.
+			Assert.IsNull(r.Items[idx].FileListFilename);
+			// RunCount/DateRun: the fixture files are freshly created and never launched via Everything.
+			Assert.IsTrue(!r.Items[idx].RunCount.HasValue || r.Items[idx].RunCount == 0);
+			Assert.IsNull(r.Items[idx].DateRun);
+			// AccessTime/DateRecentlyChanged depend on OS-level access-time tracking and indexing timing,
+			// which vary by machine; just confirm reading them doesn't throw and, if set, isn't bogus.
+			Assert.IsTrue(r.Items[idx].AccessTime.GetValueOrDefault(DateTime.UtcNow).Year > 2000);
+			Assert.IsTrue(r.Items[idx].DateRecentlyChanged.GetValueOrDefault(DateTime.UtcNow).Year > 2000);
+		}
+
+		[TestMethod]
+		public void TestSearchQuery2HighlightedResults()
+		{
+			Result r = everything.Search(
+				"FileA " + data.TestDataRootDirectory,
+				SearchClient.SearchFlags.None,
+				includeHighlightedText: true);
+			Assert.AreEqual<uint>(4, r.TotalItems);
+
+			foreach (Result.Item item in r.Items)
+			{
+				Assert.IsNotNull(item.HighlightedName);
+				Assert.IsTrue(item.HighlightedName!.Contains('*'));
+				Assert.IsNotNull(item.HighlightedPath);
+			}
 		}
 
 	}
